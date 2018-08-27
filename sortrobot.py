@@ -1,5 +1,5 @@
 from __future__ import print_function
-import rrb3, time, numpy, os
+import rrb3, time, numpy, os, tempfile
 import findcard
 
 #DN_SPEED = 0.5
@@ -109,9 +109,10 @@ class SortRobot:
     def move_card(self, pos=12., grab=.15, wait=1.5):
         self.mv_card(pos=pos, grab=grab, wait=wait)
         self.mv_next(pos=pos)
-    def sort(self, ncards, pos1=8., pos2=12., grab=.15, wait=1.5):
+    def sort(self, ncards, pos1=6., pos2=12., grab=.15, wait=1.5):
         self.rt(pos2)
-        im = findcard.read_webcam('test.jpg')
+        _, filename = tempfile.mkstemp()
+        im = findcard.read_webcam(filename)
         self.lf(pos2)
         for i in range(ncards):
             cards = findcard.find(im)
@@ -123,8 +124,7 @@ class SortRobot:
                 print('FOUND: front')
                 pos = pos2
             self.mv_card(pos, grab=grab, wait=0)
-            os.remove('test.jpg')
-            im = findcard.read_webcam('test.jpg', wait=wait) # read while arm is away
+            im = findcard.read_webcam(filename, wait=wait) # read while arm is away
             self.mv_next(pos=pos)
         
 
