@@ -103,17 +103,6 @@ class SortRobot:
         time.sleep(wait)
         self.up(1.)
         self.lf(pos + 0.25)
-         
-
-        self.grab()
-        self.dn(height+1)
-        self.put(0)
-        self.up(height)
-        self.rt(pos)
-        self.dn(height)
-        time.sleep(wait)
-        self.up(height)
-        self.lf(pos+.25)
 
 r = SortRobot()
 import IPython; IPython.embed()
