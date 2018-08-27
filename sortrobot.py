@@ -70,7 +70,7 @@ class SortRobot:
     def valve_close(self):
         self._driver.set_oc1(0)
     def valve_open(self):
-        ._driver.set_oc1(1)
+        self._driver.set_oc1(1)
     def pump_on(self):
         self._driver.set_oc2(1)
     def pump_off(self):
