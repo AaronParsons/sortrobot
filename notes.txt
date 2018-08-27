@@ -1,5 +1,6 @@
 dd bs=4m if=2018-06-27-raspbian-stretch-lite.img of=/dev/disk1
-apt-get install ipython fswebcam git python-numpy
+apt-get install ipython fswebcam git python-numpy python-opencv python-pip
+pip install imutils
 git clone https://github.com/simonmonk/raspirobotboard3.git
 ssh -C pi@192.168.42.77 "fswebcam  -s brightness=20 -q --no-banner --background test.jpg" ; scp pi@192.168.42.77:test.jpg
 

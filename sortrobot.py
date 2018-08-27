@@ -70,7 +70,7 @@ class SortRobot:
     def valve_close(self):
         self._driver.set_oc1(0)
     def valve_open(self):
-        self._driver.set_oc1(1)
+        ._driver.set_oc1(1)
     def pump_on(self):
         self._driver.set_oc2(1)
     def pump_off(self):
@@ -91,13 +91,13 @@ class SortRobot:
         self.up(10)
         self.lf(20)
     def move_card(self, pos=12., grab=.15, wait=1.5):
-        self.dn(2.75+.25)
+        self.dn(3.25)
         self.grab()
         time.sleep(grab)
         self.put(0)
         self.up(.4)
         time.sleep(.75)
-        self.up(.4)
+        self.up(.5)
         self.rt(pos)
         self.dn(1.)
         time.sleep(wait)
