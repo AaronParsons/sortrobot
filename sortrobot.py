@@ -122,9 +122,9 @@ class SortRobot:
             else:
                 print('FOUND: front')
                 pos = pos2
-            self.mv_card(pos, grab=grab, wait=wait)
+            self.mv_card(pos, grab=grab, wait=0)
             os.remove('test.jpg')
-            im = findcard.read_webcam('test.jpg') # read while arm is away
+            im = findcard.read_webcam('test.jpg', wait=wait) # read while arm is away
             self.mv_next(pos=pos)
         
 
