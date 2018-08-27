@@ -1,13 +1,14 @@
-import cv2, imutils, os
+import cv2, imutils, os, time
 
 CASCADE_MTG_BACK = 'data/cascades/cascade_mtg_back.xml'
 W,H = 48,36
 
 MTG_BACK_CLASSIFIER = cv2.CascadeClassifier(CASCADE_MTG_BACK)
 
-def read_webcam(to_file, brightness=20):
+def read_webcam(to_file, brightness=20, wait=.2):
     cmd = 'fswebcam -s brightness=%d -q --no-banner --background %s' % (brightness, to_file)
     os.system(cmd)
+    time.sleep(wait)
     im = cv2.imread(to_file)
     return im
 
