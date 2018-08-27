@@ -114,7 +114,7 @@ class SortRobot:
         self.lf(pos2)
         for i in range(ncards):
             cards = findcard.find(im)
-                print(cards)
+            print(cards)
             if any([x < 100 for x,y in cards]):
                 print('FOUND: back')
                 pos = pos1
