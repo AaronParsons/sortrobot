@@ -1,3 +1,4 @@
+from __future__ import print_function
 import rrb3, time, numpy, findcard
 
 #DN_SPEED = 0.5
@@ -113,9 +114,12 @@ class SortRobot:
         self.lf(pos2)
         for i in range(ncards):
             cards = findcard.find(im)
+                print(cards)
             if any([x < 100 for x,y in cards]):
+                print('FOUND: back')
                 pos = pos1
             else:
+                print('FOUND: front')
                 pos = pos2
             self.mv_card(pos, grab=grab, wait=wait)
             im = findcard.read_webcam('test.jpg') # read while arm is away
