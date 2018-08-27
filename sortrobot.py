@@ -90,7 +90,21 @@ class SortRobot:
         self.stop()
         self.up(10)
         self.lf(20)
-    def move_card(self, pos=12., height=2., wait=4.5):
+    def move_card(self, pos=12., press=0., wait=1.5):
+        self.dn(2.75 + press)
+        self.grab()
+        time.sleep(.15)
+        self.put(0)
+        self.up(.4)
+        time.sleep(.85)
+        self.up(.4 + press)
+        self.rt(pos)
+        self.dn(1.)
+        time.sleep(wait)
+        self.up(1.)
+        self.lf(pos + 0.25)
+         
+
         self.grab()
         self.dn(height+1)
         self.put(0)
