@@ -1,4 +1,4 @@
-import rrb3, time, numpy
+import rrb3, time, numpy, findcard
 
 #DN_SPEED = 0.5
 #UP_SPEED = 0.7625
@@ -88,9 +88,9 @@ class SortRobot:
         self.valve_open() # stop wasting valve current
     def home(self):
         self.stop()
-        self.up(10)
-        self.lf(20)
-    def move_card(self, pos=12., grab=.15, wait=1.5):
+        self.up(2)
+        self.lf(15)
+    def mv_card(self, pos=12., grab=.15, wait=1.5):
         self.dn(3.25)
         self.grab()
         time.sleep(grab)
@@ -101,8 +101,26 @@ class SortRobot:
         self.rt(pos)
         self.dn(1.)
         time.sleep(wait)
+    def mv_next(self, pos=12.):
         self.up(1.)
         self.lf(pos + 0.25)
+    def move_card(self, pos=12., grab=.15, wait=1.5):
+        self.mv_card(pos=pos, grab=grab, wait=wait)
+        self.mv_next(pos=pos)
+    def sort(self, ncards, pos1=8., pos2=12., grab=.15, wait=1.5):
+        self.rt(pos2)
+        im = findcard.read_webcam('test.jpg')
+        self.lf(pos2)
+        for i in range(ncards):
+            cards = findcard.find(im)
+            if any([x < 100 for x,y in cards]):
+                pos = pos1
+            else:
+                pos = pos2
+            self.mv_card(pos, grab=grab, wait=wait)
+            im = findcard.read_webcam('test.jpg') # read while arm is away
+            self.mv_next(pos=pos)
+        
 
 r = SortRobot()
 import IPython; IPython.embed()
