@@ -1,5 +1,6 @@
 from __future__ import print_function
-import rrb3, time, numpy, findcard
+import rrb3, time, numpy, os
+import findcard
 
 #DN_SPEED = 0.5
 #UP_SPEED = 0.7625
@@ -122,6 +123,7 @@ class SortRobot:
                 print('FOUND: front')
                 pos = pos2
             self.mv_card(pos, grab=grab, wait=wait)
+            os.remove('test.jpg')
             im = findcard.read_webcam('test.jpg') # read while arm is away
             self.mv_next(pos=pos)
         
