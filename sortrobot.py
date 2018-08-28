@@ -16,7 +16,8 @@ def direction(v):
     return int(v < 0)
 
 class SortRobot:
-    def __init__(self, Vin=6., Vmotor=6.):
+    def __init__(self, Vin=6., Vmotor=6., verbose=False):
+        self.verbose = verbose
         self._driver = rrb3.RRB3(Vin,Vmotor)
         self.stop()
     def _send_cmd(self, m1=None, m2=None):
@@ -31,25 +32,25 @@ class SortRobot:
         self.valve_close()
     def up(self, degrees):
         dt = degrees * LIFT_TIME
-        print('UP:', dt)
+        if self.verbose: print('UP:', dt)
         self._send_cmd(m1=UP_SPEED)
         time.sleep(dt)
         self._send_cmd(m1=0.)
     def dn(self, degrees):
         dt = degrees * LIFT_TIME
-        print('DN:', dt)
+        if self.verbose: print('DN:', dt)
         self._send_cmd(m1=-DN_SPEED)
         time.sleep(dt)
         self._send_cmd(m1=0.)
     def lf(self, inches):
         dt = numpy.polyval(SLIDE_POLY, inches) * SLIDE_TIME
-        print('LF:', dt)
+        if self.verbose: print('LF:', dt)
         self._send_cmd(m2=-SLIDE_LF_SPEED)
         time.sleep(dt)
         self._send_cmd(m2=0)
     def rt(self, inches):
         dt = numpy.polyval(SLIDE_POLY, inches) * SLIDE_TIME
-        print('RT:', dt)
+        if self.verbose: print('RT:', dt)
         self._send_cmd(m2=SLIDE_RT_SPEED)
         time.sleep(dt)
         self._send_cmd(m2=0)
@@ -112,21 +113,18 @@ class SortRobot:
     def sort(self, ncards, pos1=6., pos2=12., grab=.15, wait=1.5):
         self.rt(pos2)
         _, filename = tempfile.mkstemp()
-        print(filename)
         im = findcard.read_webcam(filename, wait=1.5)
         self.lf(pos2)
         for i in range(ncards):
             cards = findcard.find(im)
-            print(cards)
             if any([x < 100 for x,y in cards]):
-                print('FOUND: back')
+                print(filename, ': back')
                 pos = pos1
             else:
-                print('FOUND: front')
+                print(filename, ': front')
                 pos = pos2
             self.mv_card(pos, grab=grab, wait=0)
             _, filename = tempfile.mkstemp()
-            print(filename)
             im = findcard.read_webcam(filename, wait=wait) # read while arm is away
             self.mv_next(pos=pos)
         
