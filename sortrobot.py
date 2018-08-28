@@ -100,12 +100,12 @@ class SortRobot:
         self.put(0)
         self.up(.4)
         time.sleep(.75)
-        self.up(.5)
+        self.up(.75)
         self.rt(pos)
-        self.dn(1.)
+        self.dn(1.25)
         time.sleep(wait)
     def mv_next(self, pos=12.):
-        self.up(1.)
+        self.up(1.25)
         self.lf(pos + 0.25)
     def move_card(self, pos=12., hgt=3.25, grab=.15, wait=1.5):
         self.mv_card(pos=pos, hgt=hgt, grab=grab, wait=wait)
