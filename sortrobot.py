@@ -110,7 +110,7 @@ class SortRobot:
     def move_card(self, pos=12., hgt=3.25, grab=.15, wait=1.5):
         self.mv_card(pos=pos, hgt=hgt, grab=grab, wait=wait)
         self.mv_next(pos=pos, hgt=hgt-2)
-    def sort(self, ncards, pos1=6., pos2=12., hgt=3.25, grab=.15, wait=1.5):
+    def sort(self, ncards, pos1=7., pos2=12., hgt=2., grab=.15, wait=1.5):
         self.rt(pos2)
         _, filename = tempfile.mkstemp()
         im = findcard.read_webcam(filename, wait=1.5)
@@ -120,7 +120,7 @@ class SortRobot:
             if any([x < 100 for x,y in cards]):
                 print('%d/%d' % (i+1,ncards), filename, ': back')
                 pos = pos1
-                w = wait + .2
+                w = wait + .5
             else:
                 print('%d/%d' % (i+1,ncards), filename, ': front')
                 pos = pos2
