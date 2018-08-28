@@ -120,12 +120,14 @@ class SortRobot:
             if any([x < 100 for x,y in cards]):
                 print('%d/%d' % (i+1,ncards), filename, ': back')
                 pos = pos1
+                w = wait + .2
             else:
                 print('%d/%d' % (i+1,ncards), filename, ': front')
                 pos = pos2
+                w = wait
             self.mv_card(pos, hgt=hgt, grab=grab, wait=0)
             _, filename = tempfile.mkstemp()
-            im = findcard.read_webcam(filename, wait=wait) # read while arm is away
+            im = findcard.read_webcam(filename, wait=w) # read while arm is away
             self.mv_next(pos=pos)
         
 
