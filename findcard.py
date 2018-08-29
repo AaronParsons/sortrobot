@@ -1,6 +1,6 @@
 import cv2, imutils, os, time
 
-CASCADE_MTG_BACK = 'data/cascades/cascade_mtg_back002.xml'
+CASCADE_MTG_BACK = 'data/cascades/cascade_mtg_back003.xml'
 W,H = 48,36
 
 MTG_BACK_CLASSIFIER = cv2.CascadeClassifier(CASCADE_MTG_BACK)
