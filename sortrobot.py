@@ -89,22 +89,20 @@ class SortRobot:
         self.stop()
         self.up(2)
         self.lf(15)
-    def mv_card(self, pos=12., hgt=1.25):
+    def mv_card(self, pos=12., hgt=1.5):
         self.grab()
-        self.dn(hgt)
-        self.up(.25*hgt)
-        time.sleep(.75)
-        self.up(.75*hgt)
+        self.dn(2*hgt) # push hard to grab card
+        self.up(hgt)
         self.rt(pos)
         self.dn(hgt)
         self.release()
-    def mv_next(self, pos=12., hgt=1.25):
+    def mv_next(self, pos=12., hgt=1.5):
         self.up(hgt)
         self.lf(pos + 0.25)
-    def move_card(self, pos=12., hgt=1.25):
+    def move_card(self, pos=12., hgt=1.5):
         self.mv_card(pos=pos, hgt=hgt)
         self.mv_next(pos=pos, hgt=hgt)
-    def sort(self, ncards, pos1=7., pos2=12., hgt=2., grab=.15, wait=1.5):
+    def sort(self, ncards, pos1=7., pos2=12., hgt=1.5):
         self.rt(pos2)
         _, filename = tempfile.mkstemp()
         im = findcard.read_webcam(filename, wait=1.5)
