@@ -102,7 +102,7 @@ class SortRobot:
         self.up(hgt)
         self.lf(pos + 0.25)
     def move_card(self, pos=12., hgt=1.25):
-        self.mv_card(pos=pos, hgt=hgt, grab=grab, wait=wait)
+        self.mv_card(pos=pos, hgt=hgt)
         self.mv_next(pos=pos, hgt=hgt)
     def sort(self, ncards, pos1=7., pos2=12., hgt=2., grab=.15, wait=1.5):
         self.rt(pos2)
