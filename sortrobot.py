@@ -80,36 +80,30 @@ class SortRobot:
         self._driver.set_oc2(0)
     def grab(self):
         self.pump_on()
-        self.valve_close() # hold hard
-    def hold(self):
-        self.pump_on()
+        self.valve_close()
+    def release(self, dt=.1):
         self.valve_open() # release pressure
-    def put(self, dt=5.):
-        self.valve_open() # release pressure
-        self.pump_off()
         time.sleep(dt)
-        self.valve_open() # stop wasting valve current
+        self.valve_close() # stop wasting valve current
     def home(self):
         self.stop()
         self.up(2)
         self.lf(15)
-    def mv_card(self, pos=12., grab=.15, hgt=3.25, wait=1.5):
-        self.dn(hgt)
+    def mv_card(self, pos=12., hgt=1.25):
         self.grab()
-        time.sleep(grab)
-        self.put(0)
-        self.up(.4)
+        self.dn(hgt)
+        self.up(.25*hgt)
         time.sleep(.75)
-        self.up(.75)
+        self.up(.75*hgt)
         self.rt(pos)
-        self.dn(1.25)
-        time.sleep(wait)
-    def mv_next(self, pos=12.):
-        self.up(1.25)
+        self.dn(hgt)
+        self.release()
+    def mv_next(self, pos=12., hgt=1.25):
+        self.up(hgt)
         self.lf(pos + 0.25)
-    def move_card(self, pos=12., hgt=3.25, grab=.15, wait=1.5):
+    def move_card(self, pos=12., hgt=1.25):
         self.mv_card(pos=pos, hgt=hgt, grab=grab, wait=wait)
-        self.mv_next(pos=pos, hgt=hgt-2)
+        self.mv_next(pos=pos, hgt=hgt)
     def sort(self, ncards, pos1=7., pos2=12., hgt=2., grab=.15, wait=1.5):
         self.rt(pos2)
         _, filename = tempfile.mkstemp()
