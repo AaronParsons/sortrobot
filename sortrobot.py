@@ -109,7 +109,7 @@ class SortRobot:
         findcard.webcam_to_file(filename)
         self.lf(pos2)
         for i in range(ncards):
-            time.sleep(max(0,time.time()-t0-min_time))
+            time.sleep(max(0,min_time - (time.time()-t0)))
             cards = findcard.find_from_file(filename)
             if any([x < 100 for x,y in cards]):
                 print('%d/%d' % (i+1,ncards), filename, ': back')
@@ -119,6 +119,7 @@ class SortRobot:
                 pos = pos2
             self.mv_card(pos, hgt=hgt)
             _, filename = tempfile.mkstemp()
+            t0 = time.time()
             findcard.webcam_to_file(filename) # read while arm is away
             self.mv_next(pos=pos)
         
