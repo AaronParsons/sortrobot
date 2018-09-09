@@ -11,7 +11,7 @@ def webcam_to_file(to_file, brightness=20):
 
 def find_from_file(filename, classifier=MTG_BACK_CLASSIFIER, min_size=(W,H), scale_factor=1.1, min_neighbors=1):
     im = cv2.imread(filename)
-    return find(im, classifier=classifier, min_size=min_size, scale_factor=scale_factor, min_neighbors=min_neighbors):
+    return find(im, classifier=classifier, min_size=min_size, scale_factor=scale_factor, min_neighbors=min_neighbors)
 
 def read_webcam(to_file, brightness=20, wait=.2):
     webcam_to_file(to_file, brightness=brightness)
