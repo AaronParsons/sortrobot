@@ -117,7 +117,7 @@ class SortRobot:
                 print('%d/%d' % (i+1,ncards), filename, ': front')
                 pos = pos2
                 w = wait
-            self.mv_card(pos, hgt=hgt, grab=grab, wait=0)
+            self.mv_card(pos, hgt=hgt)
             _, filename = tempfile.mkstemp()
             im = findcard.read_webcam(filename, wait=w) # read while arm is away
             self.mv_next(pos=pos)
