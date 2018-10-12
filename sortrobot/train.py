@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from neural import HALF_SZ, x, y_, accuracy, keep_prob, train_step
-import PIL
+import cv2
 import random
 import os
 
@@ -23,7 +23,7 @@ def get_batch(files, labdict, label, label_cnt, non_cnt, half_sz):
     ratio = float(non_cnt) / float(label_cnt)
     for filename, cx, cy in sublocs:
         filelocs = [(x, y) for f, x, y in locs if f == filename]
-        im = np.array(PIL.Image.open(filemap[filename]))
+        im = cv2.imread(filemap[filename])
         x = cx + random.randint(-half_sz/2, half_sz/2)
         y = cy + random.randint(-half_sz/2, half_sz/2)
         x, y = max(half_sz, x), max(half_sz, y)
