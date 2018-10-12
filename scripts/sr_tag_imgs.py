@@ -4,46 +4,84 @@ import sys, PIL, numpy as np
 import cPickle, os
 
 filelist = sys.argv[1:]
-labels = {os.path.basename(f): [] for f in filelist}
+labdict = {os.path.basename(f): [] for f in filelist}
 try:
     pickle_file = open('labels.pkl','r')
-    labels.update(cPickle.load(pickle_file))
+    labdict.update(cPickle.load(pickle_file))
 except(IOError):
     pass
 
-cnt = 0
-im = PIL.Image.open(filelist[cnt])
+labels = set([label for lablist in labdict.values() for x,y,label in lablist])
+labels = {label: cnt for cnt, label in enumerate(labels)}
+filecnt = 0
+im = PIL.Image.open(filelist[filecnt])
 img_plt = plt.imshow(im)
-curfile = os.path.basename(filelist[cnt])
-lbl_plt = plt.plot([x for x,y in labels[curfile]], [y for x,y in labels[curfile]], 'm.')[0]
+curfile = os.path.basename(filelist[filecnt])
+
+colors = [color + symbol for color in 'mgcbw' for symbol in 'o^vh']
+lab_plots = {}
+
+def update_plot(plts, label):
+    global lab_plots
+    data = np.array([(x,y) for x,y,L in labdict[curfile] if L == label])
+    if data.size == 0:
+        data = np.empty((0,2))
+    print label, data
+    if plts.has_key(label):
+        lplt = lab_plots[label]
+        lplt.set_xdata(data[:,0])
+        lplt.set_ydata(data[:,1])
+    else:
+        labels[label] = len(labels)
+        color = colors[labels[label] % len(colors)]
+        lab_plots[label] = plt.plot(data[:,0], data[:,1], color)[0]
+    return
+
+for label in labels.keys():
+    update_plot(lab_plots, label)
+
+def get_cur_label():
+    print 'Current labels:'
+    print ', '.join(labels)
+    cur_label = raw_input('Enter new label: ')
+    print 'New current label:', cur_label
+    return cur_label
+
+cur_label = get_cur_label()
 
 def click(event):
-    global labels
-    curfile = os.path.basename(filelist[cnt])
+    global labdict
+    curfile = os.path.basename(filelist[filecnt])
     if event.button == 1:
         x,y = int(np.around(event.xdata)), int(np.around(event.ydata))
-        labels[curfile] = labels.get(curfile, []) + [(x,y)]
+        labdict[curfile] = labdict.get(curfile, []) + [(x,y,cur_label)]
     elif event.button == 3:
-        labels[curfile] = labels.get(curfile, [None])[:-1]
-    lbl_plt.set_xdata([x for x,y in labels[curfile]])
-    lbl_plt.set_ydata([y for x,y in labels[curfile]])
+        labdict[curfile] = labdict.get(curfile, [None])[:-1]
+    update_plot(lab_plots, cur_label)
     plt.draw()
-    print labels[curfile]
+    print labdict[curfile]
 
 def press(event):
-    global cnt
+    global filecnt
+    global cur_label
+    global curfile
     if event.key == 'n':
         print 'Writing labels'
         f = open('labels.pkl', 'w')
-        cPickle.dump(labels, f)
+        cPickle.dump(labdict, f)
         f.close()
-        cnt += 1
-        im = PIL.Image.open(filelist[cnt])
+        filecnt += 1
+        im = PIL.Image.open(filelist[filecnt])
         img_plt.set_data(im)
-        curfile = os.path.basename(filelist[cnt])
-        lbl_plt.set_xdata([x for x,y in labels[curfile]])
-        lbl_plt.set_ydata([y for x,y in labels[curfile]])
         plt.draw()
+        curfile = os.path.basename(filelist[filecnt])
+        for label in labels.keys():
+            update_plot(lab_plots, label)
+        plt.draw()
+    if event.key == 'y':
+        cur_label = get_cur_label()
+        if cur_label not in labels:
+            labels[cur_label] = len(labels)
 
 plt.connect('button_press_event', click)
 plt.connect('key_press_event', press)

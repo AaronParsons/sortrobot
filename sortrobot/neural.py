@@ -18,6 +18,7 @@ def max_pool_2x2(x):
 
 # VERSION 001
 
+HALF_SZ = 32
 IMG_SIZE = HALF_SZ * 2
 x = tf.placeholder(tf.float32, shape=[None, IMG_SIZE, IMG_SIZE, 3])
 y_ = tf.placeholder(tf.float32, shape=[None, 2])
@@ -38,7 +39,6 @@ x_image = tf.reshape(x, [-1, IMG_SIZE, IMG_SIZE, 3])
 # and finally max pool. The max_pool_2x2 method will reduce the image size to IMG_SIZE/2
 h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 h_pool1 = max_pool_2x2(h_conv1)
-print h_pool1.shape
 
 # In order to build a deep network, we stack several layers of this type. 
 # The second layer will have 64 features for each 5x5 patch.
@@ -46,7 +46,6 @@ W_conv2 = weight_variable([5, 5, 32, 64])
 b_conv2 = bias_variable([64])
 h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 h_pool2 = max_pool_2x2(h_conv2)
-print h_pool2.shape
 
 # Now that the image size has been reduced to 7x7, we add a fully-connected 
 # layer with 1024 neurons to allow processing on the entire image. We reshape 
