@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import pylab as plt
-import sys, PIL, numpy as np
+import sys, cv2, numpy as np
 import cPickle, os
 
 filelist = sys.argv[1:]
@@ -14,8 +14,8 @@ except(IOError):
 labels = set([label for lablist in labdict.values() for x,y,label in lablist])
 labels = {label: cnt for cnt, label in enumerate(labels)}
 filecnt = 0
-im = PIL.Image.open(filelist[filecnt])
-img_plt = plt.imshow(im)
+im = cv2.imread(filelist[filecnt])
+img_plt = plt.imshow(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
 curfile = os.path.basename(filelist[filecnt])
 
 colors = [color + symbol for color in 'mgcbw' for symbol in 'o^vh']
@@ -71,8 +71,8 @@ def press(event):
         cPickle.dump(labdict, f)
         f.close()
         filecnt += 1
-        im = PIL.Image.open(filelist[filecnt])
-        img_plt.set_data(im)
+        im = cv2.imread(filelist[filecnt])
+        img_plt.set_data(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
         plt.draw()
         curfile = os.path.basename(filelist[filecnt])
         for label in labels.keys():
