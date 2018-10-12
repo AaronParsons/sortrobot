@@ -17,6 +17,8 @@ def random_permutation(img):
 def get_batch(files, labdict, label, label_cnt, non_cnt, half_sz):
     filemap = {os.path.basename(f): f for f in files if os.path.basename(f) in labdict}
     locs = [(filename, x, y) for filename in labdict.keys() for x,y,L in labdict[filename] if L == label]
+    if len(locs) < label_cnt:
+        locs *= int(np.ceil(float(label_cnt) / len(locs)))
     sublocs = random.sample(locs, label_cnt)
     has_label = []
     non_label = []
