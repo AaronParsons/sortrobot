@@ -1,6 +1,19 @@
 from __future__ import print_function
-import rrb3, time, numpy, os, tempfile
+import time, numpy, os, tempfile
 import findcard
+try:
+    from rrb3 import RRB3 # installed if we are on rpi, else ImportError
+except(ImportError):
+    class RRB3:
+        '''A dummy wrapper to allow testing when not on rpi.'''
+        def __init__(self, *args, **kwargs):
+            pass
+        def set_motors(self, v1, d1, v2, d2):
+            pass
+        def set_oc1(self, on_off):
+            pass
+        def set_oc2(self, on_off):
+            pass
 
 #DN_SPEED = 0.5
 #UP_SPEED = 0.7625
@@ -18,7 +31,7 @@ def direction(v):
 class SortRobot:
     def __init__(self, Vin=6., Vmotor=6., verbose=False):
         self.verbose = verbose
-        self._driver = rrb3.RRB3(Vin,Vmotor)
+        self._driver = RRB3(Vin,Vmotor)
         self.stop()
     def _send_cmd(self, m1=None, m2=None):
         if m1 is not None:
@@ -122,7 +135,3 @@ class SortRobot:
             t0 = time.time()
             findcard.webcam_to_file(filename) # read while arm is away
             self.mv_next(pos=pos)
-        
-
-r = SortRobot()
-import IPython; IPython.embed()
