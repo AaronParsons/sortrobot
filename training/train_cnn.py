@@ -19,39 +19,39 @@ def flipped_permutations(img):
             rv.append(np.fliplr(i))
     return rv
     
-backs = []
-other = []
-for cnt,f in enumerate(filelist):
-    if cnt % 70 == 0:
-        print cnt, len(filelist)
-    im = np.array(PIL.Image.open(f))
-    lbls = labels[os.path.basename(f)]
-    for cy in range(HALF_SZ, im.shape[0]-HALF_SZ/2, HALF_SZ/2):
-        for cx in range(HALF_SZ, im.shape[1]-HALF_SZ/2, HALF_SZ/2):
-            clip = im[cy-HALF_SZ:cy+HALF_SZ,cx-HALF_SZ:cx+HALF_SZ]
-            dist = [(cx-x0)**2+(cy-y0)**2 for x0,y0 in lbls]
-            if len(dist) > 0 and min(dist) < (0.5 * HALF_SZ)**2:
-                backs += flipped_permutations(clip)
-            elif len(dist) == 0 or min(dist) > (1.5 * HALF_SZ)**2:
-                if cnt % 16 != 0: continue
-                other += flipped_permutations(clip)
-                
-print len(backs), len(other)
-backs = np.array(backs, dtype=np.float32) / 255
-other = np.array(other, dtype=np.float32) / 255
-print backs.shape, other.shape
-
-NTEST = 100
-train_x = np.concatenate([backs[:-NTEST], other[:-NTEST]], axis=0)
-NBACKS = len(backs[:-NTEST])
-train_y = np.zeros((train_x.shape[0],2), dtype=np.float32)
-train_y[:NBACKS,0] = 1
-train_y[NBACKS:,1] = 1
-test_x = np.concatenate([backs[-NTEST:], other[-NTEST:]], axis=0)
-test_y = np.zeros((2*NTEST,2), dtype=np.float32)
-test_y[:NTEST,0] = 1
-test_y[NTEST:,1] = 1
-print train_x.shape, test_x.shape
+#backs = []
+#other = []
+#for cnt,f in enumerate(filelist):
+#    if cnt % 70 == 0:
+#        print cnt, len(filelist)
+#    im = np.array(PIL.Image.open(f))
+#    lbls = labels[os.path.basename(f)]
+#    for cy in range(HALF_SZ, im.shape[0]-HALF_SZ/2, HALF_SZ/2):
+#        for cx in range(HALF_SZ, im.shape[1]-HALF_SZ/2, HALF_SZ/2):
+#            clip = im[cy-HALF_SZ:cy+HALF_SZ,cx-HALF_SZ:cx+HALF_SZ]
+#            dist = [(cx-x0)**2+(cy-y0)**2 for x0,y0 in lbls]
+#            if len(dist) > 0 and min(dist) < (0.5 * HALF_SZ)**2:
+#                backs += flipped_permutations(clip)
+#            elif len(dist) == 0 or min(dist) > (1.5 * HALF_SZ)**2:
+#                if cnt % 16 != 0: continue
+#                other += flipped_permutations(clip)
+#                
+#print len(backs), len(other)
+#backs = np.array(backs, dtype=np.float32) / 255
+#other = np.array(other, dtype=np.float32) / 255
+#print backs.shape, other.shape
+#
+#NTEST = 100
+#train_x = np.concatenate([backs[:-NTEST], other[:-NTEST]], axis=0)
+#NBACKS = len(backs[:-NTEST])
+#train_y = np.zeros((train_x.shape[0],2), dtype=np.float32)
+#train_y[:NBACKS,0] = 1
+#train_y[NBACKS:,1] = 1
+#test_x = np.concatenate([backs[-NTEST:], other[-NTEST:]], axis=0)
+#test_y = np.zeros((2*NTEST,2), dtype=np.float32)
+#test_y[:NTEST,0] = 1
+#test_y[NTEST:,1] = 1
+#print train_x.shape, test_x.shape
 
 # Define NN
 
@@ -133,27 +133,53 @@ train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+#saver = tf.train.Saver()
+#
+#NCYCLES = 2000
+#with tf.Session() as sess:
+#    sess.run(tf.global_variables_initializer())
+#    for i in range(NCYCLES):
+#        backs_ratio = max(.5 - float(i)/NCYCLES, .15)
+#        NSAMP = 100
+#        batch = np.concatenate([np.random.randint(NBACKS, size=int(NSAMP*backs_ratio)), np.random.randint(NBACKS,train_x.shape[0], size=int(NSAMP*(1-backs_ratio)))])
+#        if i % 10 == 0:
+#            train_accuracy = accuracy.eval(feed_dict={x: train_x[batch], y_: train_y[batch], keep_prob: 1.0})
+#            print(i, backs_ratio)
+#            print('step %d, training accuracy %g' % (i, train_accuracy))
+#            #print train_y[batch].flatten()
+#            #print y_conv.eval(feed_dict={x: train_x[batch], y_: train_y[batch], keep_prob: 1.0}).flatten()
+#            saver.save(sess, os.path.join(os.getcwd(), graph_file))
+#        train_step.run(feed_dict={x: train_x[batch], y_: train_y[batch], keep_prob: 0.5})
+
+
 saver = tf.train.Saver()
+#with tf.Session() as session:
+#    saver.restore(session, graph_file)
+#    print('test accuracy %g' % accuracy.eval(feed_dict={x: test_x, y_: test_y, keep_prob: 1.0}))
+#    k = session.run([tf.nn.softmax(y_conv)], feed_dict={x:test_x , keep_prob: 1.})
 
-NCYCLES = 2000
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
-    for i in range(NCYCLES):
-        backs_ratio = max(.5 - float(i)/NCYCLES, .15)
-        NSAMP = 100
-        batch = np.concatenate([np.random.randint(NBACKS, size=int(NSAMP*backs_ratio)), np.random.randint(NBACKS,train_x.shape[0], size=int(NSAMP*(1-backs_ratio)))])
-        if i % 10 == 0:
-            train_accuracy = accuracy.eval(feed_dict={x: train_x[batch], y_: train_y[batch], keep_prob: 1.0})
-            print(i, backs_ratio)
-            print('step %d, training accuracy %g' % (i, train_accuracy))
-            #print train_y[batch].flatten()
-            #print y_conv.eval(feed_dict={x: train_x[batch], y_: train_y[batch], keep_prob: 1.0}).flatten()
-            saver.save(sess, os.path.join(os.getcwd(), graph_file))
-        train_step.run(feed_dict={x: train_x[batch], y_: train_y[batch], keep_prob: 0.5})
+#f = DATA_DIR + 'tmpwCIGAG'
+import sys
+f = sys.argv[-1]
 
-
-saver = tf.train.Saver()
 with tf.Session() as session:
     saver.restore(session, graph_file)
-    print('test accuracy %g' % accuracy.eval(feed_dict={x: test_x, y_: test_y, keep_prob: 1.0}))
-    k = session.run([tf.nn.softmax(y_conv)], feed_dict={x:test_x , keep_prob: 1.})
+    im = np.array(PIL.Image.open(f))
+    input_x = []
+    centers = []
+    for cy in range(HALF_SZ, im.shape[0]-HALF_SZ/2, HALF_SZ/2):
+        for cx in range(HALF_SZ, im.shape[1]-HALF_SZ/2, HALF_SZ/2):
+            sub_im = im[cy-HALF_SZ:cy+HALF_SZ,cx-HALF_SZ:cx+HALF_SZ]
+            input_x.append(sub_im)
+            centers.append((cx,cy))
+    input_x = np.array(input_x)
+    k = session.run([tf.nn.softmax(y_conv)], feed_dict={x:input_x , keep_prob: 1.})
+
+import pylab as plt
+plt.figure()
+plt.imshow(im)
+for (cx,cy),is_other in zip(centers, np.argmax(np.array(k)[0], 1)):
+    if is_other: plt.plot(cx, cy, 'w.')
+    else: plt.plot(cx, cy, 'k.')
+
+plt.show()
