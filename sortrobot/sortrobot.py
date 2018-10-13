@@ -29,9 +29,10 @@ def direction(v):
     return int(v < 0)
 
 class SortRobot:
-    def __init__(self, Vin=6., Vmotor=6., verbose=False):
+    def __init__(self, session, savefile, Vin=6., Vmotor=6., verbose=False):
         self.verbose = verbose
         self._driver = RRB3(Vin,Vmotor)
+        self._finder = findcard.FinderCNN(session, savefile)
         self.stop()
     def _send_cmd(self, m1=None, m2=None):
         if m1 is not None:
@@ -123,8 +124,11 @@ class SortRobot:
         self.lf(pos2)
         for i in range(ncards):
             time.sleep(max(0,min_time - (time.time()-t0)))
-            cards = findcard.find_from_file(filename)
-            if any([x < 100 for x,y in cards]):
+            im = cv2.imread(filename)
+            cards = self._finder.find(im)
+            #cards = findcard.find_from_file(filename)
+            #if any([x < 100 for x,y in cards]):
+            if len(cards) >= 2:
                 print('%d/%d' % (i+1,ncards), filename, ': back')
                 pos = pos1
             else:
