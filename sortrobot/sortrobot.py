@@ -16,11 +16,9 @@ except(ImportError):
         def set_oc2(self, on_off):
             pass
 
-#DN_SPEED = 0.5
-#UP_SPEED = 0.7625
-DN_SPEED = 0.66
+DN_SPEED = 1.
 UP_SPEED = 1.
-LIFT_TIME = 0.0016666 * 300
+LIFT_TIME = 1.
 SLIDE_LF_SPEED = 1.
 SLIDE_RT_SPEED = 0.9625
 SLIDE_TIME = .1125
