@@ -16,12 +16,12 @@ except(ImportError):
         def set_oc2(self, on_off):
             pass
 
-DN_SPEED = 1.
+DN_SPEED = 0.965
 UP_SPEED = 1.
-LIFT_TIME = 1.
+LIFT_TIME = 0.33
 SLIDE_LF_SPEED = 1.
 SLIDE_RT_SPEED = 0.9625
-SLIDE_TIME = .1125
+SLIDE_TIME = 0.1125
 SLIDE_POLY = numpy.array([1.07980235e-04,-1.45621868e-03,1.98557185e-03,5.55231344e-01,2.23568309e-01])
 
 def direction(v):
