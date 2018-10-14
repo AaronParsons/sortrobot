@@ -104,7 +104,7 @@ class SortRobot:
         self.lf(15)
     def mv_card(self, pos=12., hgt=1.5):
         self.grab()
-        self.dn(2*hgt) # push hard to grab card
+        self.dn(hgt) # push hard to grab card
         self.up(hgt)
         self.rt(pos)
         self.dn(hgt)
