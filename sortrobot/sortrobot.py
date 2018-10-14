@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time, numpy, os, tempfile
 import findcard
+import cv2
 try:
     from rrb3 import RRB3 # installed if we are on rpi, else ImportError
 except(ImportError):
@@ -126,9 +127,16 @@ class SortRobot:
             time.sleep(max(0,min_time - (time.time()-t0)))
             im = cv2.imread(filename)
             cards = self._finder.find(im)
+            print(cards)
+            cnt = 0
+            for cx0,cy0 in cards:
+                dist = [(cx0-cx)**2 + (cy0-cy)**2 for cx,cy in cards]
+                new_cnt = len([d for d in dist if d <= (1.5 * self._finder.half_sz)**2])
+                cnt = max(cnt, new_cnt)
+            print(cnt)
             #cards = findcard.find_from_file(filename)
             #if any([x < 100 for x,y in cards]):
-            if len(cards) >= 2:
+            if cnt >= 3:
                 print('%d/%d' % (i+1,ncards), filename, ': back')
                 pos = pos1
             else:

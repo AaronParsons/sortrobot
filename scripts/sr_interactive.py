@@ -1,5 +1,10 @@
-from sortrobot.sortrobot import SortRobot
+import sortrobot
+import tensorflow as tf
+import sys
 import IPython
         
-sr = SortRobot()
-IPython.embed()
+savefile = sys.argv[-1]
+
+with tf.Session() as session:
+    sr = sortrobot.sortrobot.SortRobot(session, savefile)
+    IPython.embed()
