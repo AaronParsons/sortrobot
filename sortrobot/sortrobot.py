@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time, numpy, os, tempfile
 import findcard
+import threading
 import cv2
 try:
     from rrb3 import RRB3 # installed if we are on rpi, else ImportError
@@ -31,42 +32,87 @@ class SortRobot:
     def __init__(self, session, savefile, Vin=6., Vmotor=6., verbose=False):
         self.verbose = verbose
         self._driver = RRB3(Vin,Vmotor)
+        self._motor_lock = threading.Lock()
+        self._oc_lock = threading.Lock()
+        self._stop_event = threading.Event()
         self._finder = findcard.FinderCNN(session, savefile)
         self.stop()
-    def _send_cmd(self, m1=None, m2=None):
+    def _motor_cmd(self, m1=None, m2=None):
+        if self._stop_event.is_set(): return
+        self._motor_lock.acquire()
         if m1 is not None:
             self._m1 = m1
         if m2 is not None:
             self._m2 = m2
         self._driver.set_motors(abs(self._m1), direction(self._m1), abs(self._m2), direction(self._m2))
+        self._motor_lock.release()
+    def _oc_cmd(self, oc1=None, oc2=None):
+        if self._stop_event.is_set(): return
+        self._oc_lock.acquire()
+        if oc1 is not None:
+            self._driver.set_oc1(oc1)
+        if oc2 is not None:
+            self._driver.set_oc2(oc2)
+        self._oc_lock.release()
     def stop(self):
-        self._send_cmd(0.,0.)
-        self.pump_off()
-        self.valve_close()
-    def up(self, degrees):
-        dt = degrees * LIFT_TIME
+        self._stop_event.set()
+        # Access driver directly to supercede locks
+        self._driver.set_motors(0, 0, 0, 0)
+        self._driver.set_oc1(0)
+        self._driver.set_oc2(0)
+        # Make sure all threads have cleared out
+        for thread in threading.enumerate():
+            thread.join() 
+        # After clearing all threads, re-enable access
+        self._stop_event.clear()
+    def valve_close(self):
+        self._oc_cmd(oc1=0)
+    def valve_open(self):
+        self._oc_cmd(oc1=1)
+    def pump_on(self):
+        self._oc_cmd(oc2=1)
+    def pump_off(self):
+        self._oc_cmd(oc2=0)
+    def up(self, distance, block=True):
+        dt = distance * LIFT_TIME
         if self.verbose: print('UP:', dt)
-        self._send_cmd(m1=UP_SPEED)
-        time.sleep(dt)
-        self._send_cmd(m1=0.)
-    def dn(self, degrees):
-        dt = degrees * LIFT_TIME
+        def up_thread():
+            self._send_cmd(m1=UP_SPEED)
+            time.sleep(dt)
+            self._send_cmd(m1=0.)
+        thd = threading.Thread(target=up_thread)
+        thd.start()
+        if block: thd.join()
+    def dn(self, distance, block=True):
+        dt = distance * LIFT_TIME
         if self.verbose: print('DN:', dt)
-        self._send_cmd(m1=-DN_SPEED)
-        time.sleep(dt)
-        self._send_cmd(m1=0.)
-    def lf(self, inches):
-        dt = numpy.polyval(SLIDE_POLY, inches) * SLIDE_TIME
+        def dn_thread():
+            self._send_cmd(m1=-DN_SPEED)
+            time.sleep(dt)
+            self._send_cmd(m1=0.)
+        thd = threading.Thread(target=dn_thread)
+        thd.start()
+        if block: thd.join()
+    def lf(self, distance, block=True):
+        dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
         if self.verbose: print('LF:', dt)
-        self._send_cmd(m2=-SLIDE_LF_SPEED)
-        time.sleep(dt)
-        self._send_cmd(m2=0)
-    def rt(self, inches):
-        dt = numpy.polyval(SLIDE_POLY, inches) * SLIDE_TIME
+        def lf_thread():
+            self._send_cmd(m2=-SLIDE_LF_SPEED)
+            time.sleep(dt)
+            self._send_cmd(m2=0)
+        thd = threading.Thread(target=lf_thread)
+        thd.start()
+        if block: thd.join()
+    def rt(self, distance, block=True):
+        dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
         if self.verbose: print('RT:', dt)
-        self._send_cmd(m2=SLIDE_RT_SPEED)
-        time.sleep(dt)
-        self._send_cmd(m2=0)
+        def rt_thread():
+            self._send_cmd(m2=SLIDE_RT_SPEED)
+            time.sleep(dt)
+            self._send_cmd(m2=0)
+        thd = threading.Thread(target=rt_thread)
+        thd.start()
+        if block: thd.join()
     #def accel_lf(self, dt, dV_dt=4., Vmin=.4, update=.05):
     #    V = Vmin
     #    t0 = time.time()
@@ -83,38 +129,32 @@ class SortRobot:
     #        if V <= Vmin: break
     #        time.sleep(update)
     #    self._send_cmd(m2=0)
-    def valve_close(self):
-        self._driver.set_oc1(0)
-    def valve_open(self):
-        self._driver.set_oc1(1)
-    def pump_on(self):
-        self._driver.set_oc2(1)
-    def pump_off(self):
-        self._driver.set_oc2(0)
     def grab(self):
         self.pump_on()
         self.valve_close()
-    def release(self, dt=.1):
-        self.valve_open() # release pressure
-        time.sleep(dt)
-        self.valve_close() # stop wasting valve current
-    def home(self):
-        self.stop()
-        self.up(2)
-        self.lf(15)
-    def mv_card(self, pos=12., hgt=1.5):
+    def release(self, dt=.5, block=False):
+        def release_thread():
+            self.valve_open() # release pressure
+            time.sleep(dt)
+            self.valve_close() # stop wasting valve current
+        thd = threading.Thread(target=release_thread)
+        thd.start()
+        if block: thd.join()
+    def home(self, pos=12., hgt=1.5):
+        self.up(hgt, block=False)
+        self.lf(pos + 0.25)
+    def carry_card(self, pos=12., hgt=1.5):
         self.grab()
-        self.dn(hgt) # push hard to grab card
-        self.up(hgt)
+        self.dn(hgt)
+        self.up(hgt, block=False)
+        # Shimmy to shake off cards
+        self.lf(.1); self.rt(.1)
         self.rt(pos)
         self.dn(hgt)
         self.release()
-    def mv_next(self, pos=12., hgt=1.5):
-        self.up(hgt)
-        self.lf(pos + 0.25)
     def move_card(self, pos=12., hgt=1.5):
         self.mv_card(pos=pos, hgt=hgt)
-        self.mv_next(pos=pos, hgt=hgt)
+        self.home(pos=pos, hgt=hgt)
     def sort(self, ncards, pos1=7., pos2=12., hgt=1.5, min_time=1.5):
         _, filename = tempfile.mkstemp()
         self.rt(pos2)
