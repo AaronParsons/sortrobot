@@ -57,6 +57,7 @@ class SortRobot:
     def stop(self):
         self._stop_event.set()
         # Access driver directly to supercede locks
+        self._m1 = self._m2 = 0
         self._driver.set_motors(0, 0, 0, 0)
         self._driver.set_oc1(0)
         self._driver.set_oc2(0)
@@ -80,9 +81,9 @@ class SortRobot:
         dt = distance * LIFT_TIME
         if self.verbose: print('UP:', dt)
         def up_thread():
-            self._send_cmd(m1=UP_SPEED)
+            self._motor_cmd(m1=UP_SPEED)
             time.sleep(dt)
-            self._send_cmd(m1=0.)
+            self._motor_cmd(m1=0.)
         thd = threading.Thread(target=up_thread)
         thd.start()
         if block: thd.join()
@@ -90,9 +91,9 @@ class SortRobot:
         dt = distance * LIFT_TIME
         if self.verbose: print('DN:', dt)
         def dn_thread():
-            self._send_cmd(m1=-DN_SPEED)
+            self._motor_cmd(m1=-DN_SPEED)
             time.sleep(dt)
-            self._send_cmd(m1=0.)
+            self._motor_cmd(m1=0.)
         thd = threading.Thread(target=dn_thread)
         thd.start()
         if block: thd.join()
@@ -100,9 +101,9 @@ class SortRobot:
         dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
         if self.verbose: print('LF:', dt)
         def lf_thread():
-            self._send_cmd(m2=-SLIDE_LF_SPEED)
+            self._motor_cmd(m2=-SLIDE_LF_SPEED)
             time.sleep(dt)
-            self._send_cmd(m2=0)
+            self._motor_cmd(m2=0)
         thd = threading.Thread(target=lf_thread)
         thd.start()
         if block: thd.join()
@@ -110,9 +111,9 @@ class SortRobot:
         dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
         if self.verbose: print('RT:', dt)
         def rt_thread():
-            self._send_cmd(m2=SLIDE_RT_SPEED)
+            self._motor_cmd(m2=SLIDE_RT_SPEED)
             time.sleep(dt)
-            self._send_cmd(m2=0)
+            self._motor_cmd(m2=0)
         thd = threading.Thread(target=rt_thread)
         thd.start()
         if block: thd.join()
@@ -122,16 +123,16 @@ class SortRobot:
     #    while True:
     #        V = min(1., V + dV_dt * update)
     #        print time.time()-t0, dt, V, dt - V / dV_dt
-    #        self._send_cmd(m2=-V)
+    #        self._motor_cmd(m2=-V)
     #        time.sleep(update)
     #        if time.time() - t0 > dt - (V-Vmin) / dV_dt: break
     #    while True:
     #        V = max(Vmin, V - dV_dt * update)
     #        print time.time() - t0, dt, V
-    #        self._send_cmd(m2=-V)
+    #        self._motor_cmd(m2=-V)
     #        if V <= Vmin: break
     #        time.sleep(update)
-    #    self._send_cmd(m2=0)
+    #    self._motor_cmd(m2=0)
     def grab(self):
         self.pump_on()
         self.valve_close()
@@ -156,7 +157,7 @@ class SortRobot:
         self.dn(hgt)
         self.release()
     def move_card(self, pos=12., hgt=1.5):
-        self.mv_card(pos=pos, hgt=hgt)
+        self.carry_card(pos=pos, hgt=hgt)
         self.home(pos=pos, hgt=hgt)
     def sort(self, ncards, pos1=7., pos2=12., hgt=1.5, min_time=1.5):
         _, filename = tempfile.mkstemp()
