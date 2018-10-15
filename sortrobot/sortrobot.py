@@ -87,6 +87,7 @@ class SortRobot:
         thd = threading.Thread(target=up_thread)
         thd.start()
         if block: thd.join()
+        else: return thd
     def dn(self, distance, block=True):
         dt = distance * LIFT_TIME
         if self.verbose: print('DN:', dt)
@@ -97,6 +98,7 @@ class SortRobot:
         thd = threading.Thread(target=dn_thread)
         thd.start()
         if block: thd.join()
+        else: return thd
     def lf(self, distance, block=True):
         dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
         if self.verbose: print('LF:', dt)
@@ -107,6 +109,7 @@ class SortRobot:
         thd = threading.Thread(target=lf_thread)
         thd.start()
         if block: thd.join()
+        else: return thd
     def rt(self, distance, block=True):
         dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
         if self.verbose: print('RT:', dt)
@@ -117,6 +120,7 @@ class SortRobot:
         thd = threading.Thread(target=rt_thread)
         thd.start()
         if block: thd.join()
+        else: return thd
     #def accel_lf(self, dt, dV_dt=4., Vmin=.4, update=.05):
     #    V = Vmin
     #    t0 = time.time()
@@ -144,15 +148,18 @@ class SortRobot:
         thd = threading.Thread(target=release_thread)
         thd.start()
         if block: thd.join()
+        else: return thd
     def home(self, pos=12., hgt=1.5):
-        self.up(hgt, block=False)
+        up_thd = self.up(hgt, block=False)
         self.lf(pos + 0.25)
+        up_thd.join()
     def carry_card(self, pos=12., hgt=1.5):
         self.grab()
         self.dn(hgt)
-        self.up(hgt, block=False)
+        up_thd = self.up(hgt, block=False)
         # Shimmy to shake off cards
-        self.lf(.1); self.rt(.1)
+        self.rt(.1); self.lf(.1)
+        up_thd.join()
         self.rt(pos)
         self.dn(hgt)
         self.release()
