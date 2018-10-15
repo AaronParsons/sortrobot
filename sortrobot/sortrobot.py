@@ -4,7 +4,8 @@ import findcard
 import threading
 import cv2
 try:
-    from rrb3 import RRB3 # installed if we are on rpi, else ImportError
+    # installed if we are on rpi, else ImportError
+    from rrb3 import RRB3 # requires AaronParsons fork
 except(ImportError):
     class RRB3:
         '''A dummy wrapper to allow testing when not on rpi.'''
@@ -41,11 +42,10 @@ class SortRobot:
         if self._stop_event.is_set(): return
         self._motor_lock.acquire()
         if m1 is not None:
-            self._m1 = m1
+            self._driver.set_left_motor(abs(m1), direction(m1))
         if m2 is not None:
-            self._m2 = m2
-        if self.verbose: print('MOTOR CMD:', self._m1, self._m2)
-        self._driver.set_motors(abs(self._m1), direction(self._m1), abs(self._m2), direction(self._m2))
+            self._driver.set_right_motor(abs(m2), direction(m2))
+        if self.verbose: print('MOTOR CMD:', m1, m2)
         self._motor_lock.release()
     def _oc_cmd(self, oc1=None, oc2=None):
         if self._stop_event.is_set(): return
@@ -58,7 +58,6 @@ class SortRobot:
     def stop(self):
         self._stop_event.set()
         # Access driver directly to supercede locks
-        self._m1 = self._m2 = 0
         self._driver.set_motors(0, 0, 0, 0)
         self._driver.set_oc1(0)
         self._driver.set_oc2(0)
