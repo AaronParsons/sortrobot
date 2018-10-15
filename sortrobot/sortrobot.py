@@ -62,7 +62,10 @@ class SortRobot:
         self._driver.set_oc2(0)
         # Make sure all threads have cleared out
         for thread in threading.enumerate():
-            thread.join() 
+            try:
+                thread.join()
+            except(RuntimeError): # Can't join own thread
+                pass
         # After clearing all threads, re-enable access
         self._stop_event.clear()
     def valve_close(self):
