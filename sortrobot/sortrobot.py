@@ -44,6 +44,7 @@ class SortRobot:
             self._m1 = m1
         if m2 is not None:
             self._m2 = m2
+        if self.verbose: print('MOTOR CMD:', self._m1, self._m2)
         self._driver.set_motors(abs(self._m1), direction(self._m1), abs(self._m2), direction(self._m2))
         self._motor_lock.release()
     def _oc_cmd(self, oc1=None, oc2=None):
@@ -64,7 +65,7 @@ class SortRobot:
         # Make sure all threads have cleared out
         for thread in threading.enumerate():
             try:
-                thread.join()
+                thread.join(timeout=5)
             except(RuntimeError): # Can't join own thread
                 pass
         # After clearing all threads, re-enable access
