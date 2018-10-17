@@ -150,7 +150,8 @@ class SortRobot:
         if block: thd.join()
         else: return thd
     def home(self, pos=12., hgt=1.5):
-        up_thd = self.up(hgt, block=False)
+        #up_thd = self.up(hgt, block=False)
+        self.up(hgt)
         self.lf(pos + 0.25)
         up_thd.join()
     def carry_card(self, pos=12., hgt=1.5):
