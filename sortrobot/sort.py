@@ -23,7 +23,7 @@ class Robot(mech.Robot):
         thd.start()
         if block: thd.join()
         else: return thd
-    def sort(self, ncards, pos1=7., pos2=12., hgt=1.5, min_time=1.5):
+    def sort(self, ncards, pos1=mec.POS2, pos2=mech.POS1, hgt=mech.HEIGHT):
         self.rt(pos2)
         find_thd = self.find(block=False)
         self.lf(pos2)

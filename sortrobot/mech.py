@@ -25,6 +25,11 @@ SLIDE_RT_SPEED = 0.9625
 SLIDE_TIME = 0.1125
 SLIDE_POLY = numpy.array([1.07980235e-04,-1.45621868e-03,1.98557185e-03,5.55231344e-01,2.23568309e-01])
 
+# DEFAULT POSITIONS
+HEIGHT = 4
+POS1 = 6
+POS2 = 12
+
 def direction(v):
     return int(v < 0)
 
@@ -147,10 +152,10 @@ class Robot:
         thd.start()
         if block: thd.join()
         else: return thd
-    def home(self, pos=12., hgt=1.5):
+    def home(self, pos=POS2, hgt=HEIGHT):
         self.up(hgt)
         self.lf(pos + 0.25)
-    def carry_card(self, pos=12., hgt=1.5):
+    def carry_card(self, pos=POS2, hgt=HEIGHT):
         self.grab()
         self.dn(hgt)
         up_thd = self.up(hgt, block=False)
@@ -161,6 +166,6 @@ class Robot:
         self.dn(hgt)
         self.release()
         self.pump_off()
-    def move_card(self, pos=12., hgt=1.5):
+    def move_card(self, pos=POS2, hgt=HEIGHT):
         self.carry_card(pos=pos, hgt=hgt)
         self.home(pos=pos, hgt=hgt)
