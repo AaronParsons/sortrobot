@@ -10,7 +10,8 @@ W,H = 48,36
 MTG_BACK_CLASSIFIER = cv2.CascadeClassifier(CASCADE_MTG_BACK)
 
 def webcam_to_file(to_file, brightness=20, block=False):
-    cmd = 'fswebcam -s brightness=%d -q --no-banner --background %s' % (brightness, to_file)
+    #cmd = 'fswebcam -s brightness=%d -q --no-banner --background %s' % (brightness, to_file)
+    cmd = 'fswebcam -s brightness=%d -q --no-banner %s' % (brightness, to_file)
     p = subprocess.Popen(cmd, shell=True)
     if block: p.wait()
     else: return p
