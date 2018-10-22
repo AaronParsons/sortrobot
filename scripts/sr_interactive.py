@@ -1,10 +1,8 @@
-import sortrobot
-import tensorflow as tf
+import tensorflow as tf; tf.logging.set_verbosity(tf.logging.ERROR)
+from sortrobot.sort import Robot
 import sys
 import IPython
         
-savefile = sys.argv[-1]
-
 with tf.Session() as session:
-    sr = sortrobot.sortrobot.SortRobot(session, savefile)
+    sr = Robot(session)
     IPython.embed()
