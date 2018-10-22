@@ -5,8 +5,10 @@ import threading
 import mech
 import cv2
 
+SAVEFILE = 'training/mtg_back002.ckpl'
+
 class Robot(mech.Robot):
-    def __init__(self, session, savefile, Vin=6., Vmotor=6., verbose=False):
+    def __init__(self, session, savefile=SAVEFILE, Vin=6., Vmotor=6., verbose=False):
         mech.Robot.__init__(self, Vin=Vin, Vmotor=Vmotor, verbose=verbose)
         self._finder = find.FinderCNN(session, savefile)
         self._cards = None

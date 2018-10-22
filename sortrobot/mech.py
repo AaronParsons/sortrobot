@@ -148,10 +148,8 @@ class Robot:
         if block: thd.join()
         else: return thd
     def home(self, pos=12., hgt=1.5):
-        #up_thd = self.up(hgt, block=False)
         self.up(hgt)
         self.lf(pos + 0.25)
-        up_thd.join()
     def carry_card(self, pos=12., hgt=1.5):
         self.grab()
         self.dn(hgt)
@@ -162,6 +160,7 @@ class Robot:
         self.rt(pos)
         self.dn(hgt)
         self.release()
+        self.pump_off()
     def move_card(self, pos=12., hgt=1.5):
         self.carry_card(pos=pos, hgt=hgt)
         self.home(pos=pos, hgt=hgt)
