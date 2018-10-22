@@ -1,7 +1,7 @@
 from __future__ import print_function
 import time, tempfile
 import find
-import threading
+import threading, Queue
 import mech
 import cv2
 
@@ -11,14 +11,15 @@ class Robot(mech.Robot):
     def __init__(self, session, savefile=SAVEFILE, Vin=6., Vmotor=6., verbose=False):
         mech.Robot.__init__(self, Vin=Vin, Vmotor=Vmotor, verbose=verbose)
         self._finder = find.FinderCNN(session, savefile)
-        self._cards = None
+        self._cards = Queue.Queue()
     def find(self, block=True):
         _, filename = tempfile.mkstemp()
         if self.verbose:
             print('Webcam ->', filename)
         im = find.read_webcam(filename)
         def find_thread():
-            self._cards = self._finder.find(im)
+            cards = self._finder.find(im)
+            self._cards.put(cards)
         thd = threading.Thread(target=find_thread)
         thd.start()
         if block: thd.join()
@@ -29,7 +30,7 @@ class Robot(mech.Robot):
         self.lf(pos2)
         for i in range(ncards):
             find_thd.join()
-            cards = self._cards
+            cards = self._cards.get()
             print(cards)
             cnt = 0
             for cx0,cy0 in cards:

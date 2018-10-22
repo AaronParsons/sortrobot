@@ -4,5 +4,5 @@ import sys
 import IPython
         
 with tf.Session() as session:
-    sr = Robot(session)
+    sr = Robot(session, verbose=True)
     IPython.embed()
