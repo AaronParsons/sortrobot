@@ -12,11 +12,10 @@ class Robot(mech.Robot):
         mech.Robot.__init__(self, Vin=Vin, Vmotor=Vmotor, verbose=verbose)
         self._finder = find.FinderCNN(session, savefile)
         self._cards = Queue.Queue()
+        self.filename = None
     def find(self, block=True):
-        _, filename = tempfile.mkstemp()
-        if self.verbose:
-            print('Webcam ->', filename)
-        im = find.read_webcam(filename)
+        _, self.filename = tempfile.mkstemp()
+        im = find.read_webcam(self.filename)
         def find_thread():
             cards = self._finder.find(im)
             self._cards.put(cards)
@@ -41,10 +40,10 @@ class Robot(mech.Robot):
             #cards = find.find_from_file(filename)
             #if any([x < 100 for x,y in cards]):
             if cnt >= 3:
-                print('%d/%d' % (i+1,ncards), filename, ': back')
+                print('%d/%d' % (i+1,ncards), self.filename, ': back')
                 pos = pos1
             else:
-                print('%d/%d' % (i+1,ncards), filename, ': front')
+                print('%d/%d' % (i+1,ncards), self.filename, ': front')
                 pos = pos2
             self.carry_card(pos, hgt=hgt)
             find_thd = self.find(block=False)
