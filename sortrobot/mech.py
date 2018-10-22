@@ -1,8 +1,6 @@
 from __future__ import print_function
-import time, numpy, os, tempfile
-import findcard
+import time, numpy
 import threading
-import cv2
 try:
     # installed if we are on rpi, else ImportError
     from rrb3 import RRB3 # requires AaronParsons fork
@@ -18,6 +16,7 @@ except(ImportError):
         def set_oc2(self, on_off):
             pass
 
+# SPEED CONSTANTS
 DN_SPEED = 0.965
 UP_SPEED = 1.
 LIFT_TIME = 0.33
@@ -29,14 +28,13 @@ SLIDE_POLY = numpy.array([1.07980235e-04,-1.45621868e-03,1.98557185e-03,5.552313
 def direction(v):
     return int(v < 0)
 
-class SortRobot:
-    def __init__(self, session, savefile, Vin=6., Vmotor=6., verbose=False):
+class Robot:
+    def __init__(self, Vin=6., Vmotor=6., verbose=False):
         self.verbose = verbose
         self._driver = RRB3(Vin,Vmotor)
         self._motor_lock = threading.Lock()
         self._oc_lock = threading.Lock()
         self._stop_event = threading.Event()
-        self._finder = findcard.FinderCNN(session, savefile)
         self.stop()
     def _motor_cmd(self, m1=None, m2=None):
         if self._stop_event.is_set(): return
@@ -167,33 +165,3 @@ class SortRobot:
     def move_card(self, pos=12., hgt=1.5):
         self.carry_card(pos=pos, hgt=hgt)
         self.home(pos=pos, hgt=hgt)
-    def sort(self, ncards, pos1=7., pos2=12., hgt=1.5, min_time=1.5):
-        _, filename = tempfile.mkstemp()
-        self.rt(pos2)
-        t0 = time.time()
-        findcard.webcam_to_file(filename)
-        self.lf(pos2)
-        for i in range(ncards):
-            time.sleep(max(0,min_time - (time.time()-t0)))
-            im = cv2.imread(filename)
-            cards = self._finder.find(im)
-            print(cards)
-            cnt = 0
-            for cx0,cy0 in cards:
-                dist = [(cx0-cx)**2 + (cy0-cy)**2 for cx,cy in cards]
-                new_cnt = len([d for d in dist if d <= (1.5 * self._finder.half_sz)**2])
-                cnt = max(cnt, new_cnt)
-            print(cnt)
-            #cards = findcard.find_from_file(filename)
-            #if any([x < 100 for x,y in cards]):
-            if cnt >= 3:
-                print('%d/%d' % (i+1,ncards), filename, ': back')
-                pos = pos1
-            else:
-                print('%d/%d' % (i+1,ncards), filename, ': front')
-                pos = pos2
-            self.carry_card(pos, hgt=hgt)
-            _, filename = tempfile.mkstemp()
-            t0 = time.time()
-            findcard.webcam_to_file(filename) # read while arm is away
-            self.home(pos=pos)

@@ -1,4 +1,4 @@
-import tensorflow as tf
+import tensorflow as tf; tf.logging.set_verbosity(tf.logging.ERROR)
 
 # Define NN
 

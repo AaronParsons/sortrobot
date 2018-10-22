@@ -1,5 +1,5 @@
 import numpy as np
-import tensorflow as tf
+import tensorflow as tf; tf.logging.set_verbosity(tf.logging.ERROR)
 from neural import HALF_SZ, x, y_, accuracy, keep_prob, train_step
 import cv2
 import random

@@ -1,3 +1,1 @@
-import tensorflow
-tensorflow.logging.set_verbosity(tensorflow.logging.ERROR)
-import sortrobot, findcard, neural, train, labels
+#import sort, neural, train, labels
