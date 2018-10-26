@@ -1,6 +1,7 @@
-import sortrobot, glob, os
+import sortrobot.labels, sortrobot.train, glob, os
+import sys
 
-LABELS = '../training/labels_v001.pkl'
+LABELS = '../training/labels_v002.pkl'
 DATADIR = '../data/observed'
 OUTFILE = 'out.ckpl'
 

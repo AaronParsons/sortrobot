@@ -7,4 +7,10 @@ ssh -C pi@192.168.42.77 "fswebcam  -s brightness=20 -q --no-banner --background 
 
 python sortrobot.py
 
-
+tar czf sr_obsdata_v001.tar.gz observed/*
+scp sr_obsdata_v001.tar.gz aparsons@digilab.astro.berkeley.edu:
+ssh aparsons@digilab.astro.berkeley.edu
+scp sr_obsdata_v001.tar.gz acme1:
+ssh acme1
+scp sr_obsdata_v001.tar.gz snb1:projects/sortrobot/data
+ssh aparsons@digilab.astro.berkeley.edu -t ssh acme1 -t ssh snb1
