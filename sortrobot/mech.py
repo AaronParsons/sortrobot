@@ -170,7 +170,7 @@ class Robot:
     def move_card(self, pos=POS2, hgt=HEIGHT):
         self.carry_card(pos=pos, hgt=hgt)
         self.home(pos=pos, hgt=hgt)
-    def take_pic(self, shift=mech.POS2):
+    def take_pic(self, shift=POS2):
         self.rt(shift)
         self.filename, im = sortrobot.webcam.read().items()[0]
         if self.verbosity >= 1: print('Webcam:', self.filename)
