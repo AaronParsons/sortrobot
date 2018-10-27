@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time, numpy
 import threading
+import sortrobot.webcam
 try:
     # installed if we are on rpi, else ImportError
     from rrb3 import RRB3 # requires AaronParsons fork
@@ -34,8 +35,8 @@ def direction(v):
     return int(v < 0)
 
 class Robot:
-    def __init__(self, Vin=6., Vmotor=6., verbose=False):
-        self.verbose = verbose
+    def __init__(self, Vin=6., Vmotor=6., verbosity=1):
+        self.verbosity = verbosity
         self._driver = RRB3(Vin,Vmotor)
         self._motor_lock = threading.Lock()
         self._oc_lock = threading.Lock()
@@ -48,7 +49,7 @@ class Robot:
             self._driver.set_left_motor(abs(m1), direction(m1))
         if m2 is not None:
             self._driver.set_right_motor(abs(m2), direction(m2))
-        if self.verbose: print('MOTOR CMD:', m1, m2)
+        if self.verbosity >= 2: print('MOTOR CMD:', m1, m2)
         self._motor_lock.release()
     def _oc_cmd(self, oc1=None, oc2=None):
         if self._stop_event.is_set(): return
@@ -82,7 +83,7 @@ class Robot:
         self._oc_cmd(oc2=0)
     def up(self, distance, block=True):
         dt = distance * LIFT_TIME
-        if self.verbose: print('UP:', dt)
+        if self.verbosity >= 1: print('UP:', dt)
         def up_thread():
             self._motor_cmd(m1=UP_SPEED)
             time.sleep(dt)
@@ -93,7 +94,7 @@ class Robot:
         else: return thd
     def dn(self, distance, block=True):
         dt = distance * LIFT_TIME
-        if self.verbose: print('DN:', dt)
+        if self.verbosity >= 1: print('DN:', dt)
         def dn_thread():
             self._motor_cmd(m1=-DN_SPEED)
             time.sleep(dt)
@@ -104,7 +105,7 @@ class Robot:
         else: return thd
     def lf(self, distance, block=True):
         dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
-        if self.verbose: print('LF:', dt)
+        if self.verbosity >= 1: print('LF:', dt)
         def lf_thread():
             self._motor_cmd(m2=-SLIDE_LF_SPEED)
             time.sleep(dt)
@@ -115,7 +116,7 @@ class Robot:
         else: return thd
     def rt(self, distance, block=True):
         dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
-        if self.verbose: print('RT:', dt)
+        if self.verbosity >= 1: print('RT:', dt)
         def rt_thread():
             self._motor_cmd(m2=SLIDE_RT_SPEED)
             time.sleep(dt)
@@ -169,3 +170,9 @@ class Robot:
     def move_card(self, pos=POS2, hgt=HEIGHT):
         self.carry_card(pos=pos, hgt=hgt)
         self.home(pos=pos, hgt=hgt)
+    def take_pic(self, shift=mech.POS2):
+        self.rt(shift)
+        self.filename, im = sortrobot.webcam.read().items()[0]
+        if self.verbosity >= 1: print('Webcam:', self.filename)
+        self.lf(shift)
+        return im

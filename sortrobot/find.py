@@ -36,6 +36,7 @@ def find(im, classifier=MTG_BACK_CLASSIFIER, min_size=(W,H), scale_factor=1.1, m
 class FinderCNN:
     def __init__(self, session, savefile):
         saver = tf.train.Saver()
+        print('Restoring from', savefile)
         saver.restore(session, savefile)
         self.session = session
         self.half_sz = neural.HALF_SZ
