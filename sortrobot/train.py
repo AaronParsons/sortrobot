@@ -55,9 +55,12 @@ def get_batch(files, labdict, label, label_cnt, non_cnt, half_sz):
     
 
 def train(savefile, files, labdict, label, ncycles, nsamples, 
-          half_sz=HALF_SZ, save_every=10):
+          half_sz=HALF_SZ, save_every=10, startfile=None):
     saver = tf.train.Saver()
     with tf.Session() as sess:
+        if startfile is not None:
+            print('Restoring from', startfile)
+            saver.restore(sess, startfile)
         sess.run(tf.global_variables_initializer())
         for i in range(ncycles):
             label_ratio = max(.5 - float(i) / ncycles, 0.15) # XXX
