@@ -1,7 +1,7 @@
 from __future__ import print_function
 import time, numpy
 import threading
-import sortrobot.webcam
+from . import webcam
 try:
     # installed if we are on rpi, else ImportError
     from rrb3 import RRB3 # requires AaronParsons fork

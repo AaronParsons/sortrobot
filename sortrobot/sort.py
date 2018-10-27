@@ -1,9 +1,7 @@
 from __future__ import print_function
-import time, tempfile
-import find
 import threading, Queue
-import mech
-import cv2
+from . import mech
+from . import find
 
 #SAVEFILE = 'training/mtg_back002.ckpl'
 SAVEFILE = 'training/mtg_back_v003.ckpl'
