@@ -11,7 +11,7 @@ def to_file(filename, brightness=20, block=False):
 def read(filename=None, brightness=20):
     if filename is None:
         _, filename = tempfile.mkstemp()
-    to_file(to_file, brightness=brightness, block=True)
-    im = cv2.imread(to_file)
+    to_file(filename, brightness=brightness, block=True)
+    im = cv2.imread(filename)
     return {filename:im}
         
