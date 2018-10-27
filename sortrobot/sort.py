@@ -5,7 +5,8 @@ import threading, Queue
 import mech
 import cv2
 
-SAVEFILE = 'training/mtg_back002.ckpl'
+#SAVEFILE = 'training/mtg_back002.ckpl'
+SAVEFILE = 'training/mtg_back_v003.ckpl'
 
 class Robot(mech.Robot):
     def __init__(self, session, savefile=SAVEFILE, Vin=6., Vmotor=6., verbose=False):

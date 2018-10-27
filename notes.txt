@@ -14,3 +14,5 @@ scp sr_obsdata_v001.tar.gz acme1:
 ssh acme1
 scp sr_obsdata_v001.tar.gz snb1:projects/sortrobot/data
 ssh aparsons@digilab.astro.berkeley.edu -t ssh acme1 -t ssh snb1
+source activate hera_ml
+CUDA_VISIBLE_DEVICES=0 python sr_train_cnn.py
