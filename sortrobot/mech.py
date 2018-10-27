@@ -172,7 +172,7 @@ class Robot:
         self.home(pos=pos, hgt=hgt)
     def take_pic(self, shift=POS2):
         self.rt(shift)
-        self.filename, im = sortrobot.webcam.read().items()[0]
+        self.filename, im = webcam.read().items()[0]
         if self.verbosity >= 1: print('Webcam:', self.filename)
         self.lf(shift)
         return im
