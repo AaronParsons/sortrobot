@@ -162,6 +162,8 @@ class Robot:
         up_thd = self.up(hgt, block=False)
         # Shimmy to shake off cards
         self.rt(.1); self.lf(.1)
+        self.rt(.1); self.lf(.1)
+        self.rt(.1); self.lf(.1)
         up_thd.join()
         self.rt(pos)
         self.dn(hgt)
