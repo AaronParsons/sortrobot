@@ -4,7 +4,7 @@ from . import mech
 from . import find
 
 #SAVEFILE = 'training/mtg_back002.ckpl'
-SAVEFILE = 'training/mtg_back_v003.ckpl'
+SAVEFILE = 'training/mtg_back_v004.ckpl'
 
 class Robot(mech.Robot):
     def __init__(self, session, savefile=SAVEFILE, Vin=6., Vmotor=6., verbosity=1):
