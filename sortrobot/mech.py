@@ -173,8 +173,8 @@ class Robot:
         self.carry_card(pos=pos, hgt=hgt)
         self.home(pos=pos, hgt=hgt)
     def take_pic(self, shift=POS2):
-        self.rt(shift)
+        if shift > 0: self.rt(shift)
         self.filename, im = webcam.read().items()[0]
         if self.verbosity >= 1: print('Webcam:', self.filename)
-        self.lf(shift)
+        if shift > 0: self.lf(shift)
         return im
