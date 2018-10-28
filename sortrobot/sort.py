@@ -14,7 +14,7 @@ class Robot(mech.Robot):
         self._cards = Queue.Queue()
         self.filename = None
     def find(self, block=True, shift=0):
-        self.take_pic(shift=shift)
+        im = self.take_pic(shift=shift)
         def find_thread():
             cards = self._finder.find(im)
             self._cards.put(cards)
