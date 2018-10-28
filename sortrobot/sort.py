@@ -22,7 +22,7 @@ class Robot(mech.Robot):
         thd.start()
         if block: thd.join()
         else: return thd
-    def sort(self, ncards, pos1=mech.POS2, pos2=mech.POS1, hgt=mech.HEIGHT):
+    def sort(self, ncards, minpos=1, pos1=mech.POS2, pos2=mech.POS1, hgt=mech.HEIGHT):
         find_thd = self.find(block=False, shift=pos2)
         for i in range(ncards):
             find_thd.join()
@@ -35,7 +35,7 @@ class Robot(mech.Robot):
                 cnt = max(cnt, new_cnt)
             #cards = find.find_from_file(filename)
             #if any([x < 100 for x,y in cards]):
-            if cnt >= 3:
+            if cnt >= minpos:
                 if self.verbosity >= 1: print('%d/%d' % (i+1,ncards), self.filename, ': back')
                 pos = pos1
             else:
