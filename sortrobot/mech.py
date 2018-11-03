@@ -35,6 +35,7 @@ def direction(v):
     return int(v < 0)
 
 class Robot:
+    '''Interface for controling the mechanical and webcam functions of the SortRobot.'''
     def __init__(self, Vin=6., Vmotor=6., verbosity=1):
         self.verbosity = verbosity
         self._driver = RRB3(Vin,Vmotor)
@@ -43,6 +44,9 @@ class Robot:
         self._stop_event = threading.Event()
         self.stop()
     def _motor_cmd(self, m1=None, m2=None):
+        '''Low-level interface for the m1/m2 motors, which are nominally the 
+        arm and slide tray, respectively.  Input values are scalars whose sign
+        defines direction and whose magnitude define speed.'''
         if self._stop_event.is_set(): return
         self._motor_lock.acquire()
         if m1 is not None:
@@ -52,6 +56,9 @@ class Robot:
         if self.verbosity >= 2: print('MOTOR CMD:', m1, m2)
         self._motor_lock.release()
     def _oc_cmd(self, oc1=None, oc2=None):
+        '''Low-level interface to oc1 and oc2 on/off switches, which are
+        nominally connected to the valve and pump of the suction cup,
+        respectively.  Input values are on (1) or off (0).'''
         if self._stop_event.is_set(): return
         self._oc_lock.acquire()
         if oc1 is not None:
@@ -60,6 +67,7 @@ class Robot:
             self._driver.set_oc2(oc2)
         self._oc_lock.release()
     def stop(self):
+        '''Turn off all motors and switches.'''
         self._stop_event.set()
         # Access driver directly to supercede locks
         self._driver.set_motors(0, 0, 0, 0)
@@ -74,14 +82,25 @@ class Robot:
         # After clearing all threads, re-enable access
         self._stop_event.clear()
     def valve_close(self):
+        '''Close the valve, which propagates vacuum to the cup.'''
         self._oc_cmd(oc1=0)
     def valve_open(self):
+        '''Open the valve, which breaks the vacuum.'''
         self._oc_cmd(oc1=1)
     def pump_on(self):
+        '''Turn on the pump to generate suction.'''
         self._oc_cmd(oc2=1)
     def pump_off(self):
+        '''Turn on the pump to stop generating suction.'''
         self._oc_cmd(oc2=0)
     def up(self, distance, block=True):
+        '''Move the robot arm up the specified distance.
+        Arguments:
+            distance: nominally inches of displacment, but not accurate.
+            block: if True, wait until motion completes before returning,
+                otherwise return a handle to the thread in charge of stopping motion.
+        Returns:
+            None, unless block is False, then Thread handle.'''
         dt = distance * LIFT_TIME
         if self.verbosity >= 1: print('UP:', dt)
         def up_thread():
@@ -93,6 +112,13 @@ class Robot:
         if block: thd.join()
         else: return thd
     def dn(self, distance, block=True):
+        '''Move the robot arm down the specified distance.
+        Arguments:
+            distance: nominally inches of displacment, but not accurate.
+            block: if True, wait until motion completes before returning,
+                otherwise return a handle to the thread in charge of stopping motion.
+        Returns:
+            None, unless block is False, then Thread handle.'''
         dt = distance * LIFT_TIME
         if self.verbosity >= 1: print('DN:', dt)
         def dn_thread():
@@ -104,6 +130,13 @@ class Robot:
         if block: thd.join()
         else: return thd
     def lf(self, distance, block=True):
+        '''Move the slide tray left the specified distance.
+        Arguments:
+            distance: nominally inches of displacment, but not accurate.
+            block: if True, wait until motion completes before returning,
+                otherwise return a handle to the thread in charge of stopping motion.
+        Returns:
+            None, unless block is False, then Thread handle.'''
         dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
         if self.verbosity >= 1: print('LF:', dt)
         def lf_thread():
@@ -115,6 +148,13 @@ class Robot:
         if block: thd.join()
         else: return thd
     def rt(self, distance, block=True):
+        '''Move the slide tray right the specified distance.
+        Arguments:
+            distance: nominally inches of displacment, but not accurate.
+            block: if True, wait until motion completes before returning,
+                otherwise return a handle to the thread in charge of stopping motion.
+        Returns:
+            None, unless block is False, then Thread handle.'''
         dt = numpy.polyval(SLIDE_POLY, distance) * SLIDE_TIME
         if self.verbosity >= 1: print('RT:', dt)
         def rt_thread():
@@ -142,9 +182,17 @@ class Robot:
     #        time.sleep(update)
     #    self._motor_cmd(m2=0)
     def grab(self):
+        '''Turn the pump on and close the valve to grab a card.'''
         self.pump_on()
         self.valve_close()
     def release(self, dt=.5, block=False):
+        '''Break the vacuum seal to drop the card.
+        Arguments:
+            dt: how long to release the card before reestablishing vacuum.
+            block: if True, wait until motion completes before returning,
+                otherwise return a handle to the thread in charge of stopping motion.
+        Returns:
+            None, unless block is False, then Thread handle.'''
         def release_thread():
             self.valve_open() # release pressure
             time.sleep(dt)
@@ -154,9 +202,14 @@ class Robot:
         if block: thd.join()
         else: return thd
     def home(self, pos=POS2, hgt=HEIGHT):
+        '''Move robot arm up and slide tray all the way to the left.'''
         self.up(hgt)
         self.lf(pos + 0.25)
     def carry_card(self, pos=POS2, hgt=HEIGHT):
+        '''Assuming you are HOME, pick up a card and move it to a new stack.
+        Arguments:
+            pos: the position to the right of the new stack.  Default POS2.
+            hgt: the height of the robot arm in the up position.  Default HEIGHT.'''
         self.grab()
         self.dn(hgt)
         up_thd = self.up(hgt, block=False)
@@ -170,9 +223,19 @@ class Robot:
         self.release()
         self.pump_off()
     def move_card(self, pos=POS2, hgt=HEIGHT):
+        '''Fron HOME, pick up a card, move it to a new stack, and return HOME.
+        Arguments:
+            pos: the position to the right of the new stack.  Default POS2.
+            hgt: the height of the robot arm in the up position.  Default HEIGHT.'''
         self.carry_card(pos=pos, hgt=hgt)
         self.home(pos=pos, hgt=hgt)
     def take_pic(self, shift=POS2):
+        '''Take a picture from the webcam and return the image as a numpy array.
+        Arguments:
+            shift: the distance to move the arm right out of the way before taking
+                the pic.  Default POS2.
+        Returns:
+            im: the image as a numpy array.'''
         self.rt(shift)
         self.filename, im = webcam.read().items()[0]
         if self.verbosity >= 1: print('Webcam:', self.filename)
