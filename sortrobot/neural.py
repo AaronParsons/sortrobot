@@ -1,3 +1,6 @@
+'''This file defines the tensorflow neural network that is used for image
+identification in the find module.  It also defines the NN that is trained
+in the train module.'''
 import tensorflow as tf; tf.logging.set_verbosity(tf.logging.ERROR)
 
 # Define NN
