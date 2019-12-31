@@ -6,5 +6,5 @@ ncards = int(sys.argv[2])
 
 with tf.Session() as session:
     sr = Robot(session)
-    sr.sort(ncards)
+    sr.sort(ncards, minpos=2)
     sr.stop()

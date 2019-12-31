@@ -27,6 +27,7 @@ class Robot(mech.Robot):
             None, unless block is False, then Thread handle.'''
         im = self.take_pic(shift=shift)
         def find_thread():
+            im = self.take_pic(shift=shift)
             cards = self._finder.find(im)
             self._cards.put(cards)
         thd = threading.Thread(target=find_thread)
