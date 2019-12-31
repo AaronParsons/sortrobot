@@ -18,8 +18,8 @@ except(ImportError):
             pass
 
 # SPEED CONSTANTS
-DN_SPEED = 1. # 0.965
-UP_SPEED = 1.
+FD_SPEED = 1. # 0.965
+BK_SPEED = 1.
 LIFT_TIME = 0.33
 SLIDE_LF_SPEED = 1.
 SLIDE_RT_SPEED = 1. # 0.9625
@@ -81,24 +81,6 @@ class Robot:
                 pass
         # After clearing all threads, re-enable access
         self._stop_event.clear()
-    def fd(self, distance, block=True):
-        '''Feed a card forward the specified distance.
-        Arguments:
-            distance: nominally inches of displacment, but not accurate.
-            block: if True, wait until motion completes before returning,
-                otherwise return a handle to the thread in charge of stopping motion.
-        Returns:
-            None, unless block is False, then Thread handle.'''
-        dt = distance * LIFT_TIME
-        if self.verbosity >= 1: print('UP:', dt)
-        def up_thread():
-            self._motor_cmd(m1=UP_SPEED)
-            time.sleep(dt)
-            self._motor_cmd(m1=0.)
-        thd = threading.Thread(target=up_thread)
-        thd.start()
-        if block: thd.join()
-        else: return thd
     def bk(self, distance, block=True):
         '''Pull a card back the specified distance.
         Arguments:
@@ -108,12 +90,30 @@ class Robot:
         Returns:
             None, unless block is False, then Thread handle.'''
         dt = distance * LIFT_TIME
-        if self.verbosity >= 1: print('DN:', dt)
-        def dn_thread():
-            self._motor_cmd(m1=-DN_SPEED)
+        if self.verbosity >= 1: print('BK:', dt)
+        def bk_thread():
+            self._motor_cmd(m1=BK_SPEED)
             time.sleep(dt)
             self._motor_cmd(m1=0.)
-        thd = threading.Thread(target=dn_thread)
+        thd = threading.Thread(target=bk_thread)
+        thd.start()
+        if block: thd.join()
+        else: return thd
+    def fd(self, distance, block=True):
+        '''Push a card forward the specified distance.
+        Arguments:
+            distance: nominally inches of displacment, but not accurate.
+            block: if True, wait until motion completes before returning,
+                otherwise return a handle to the thread in charge of stopping motion.
+        Returns:
+            None, unless block is False, then Thread handle.'''
+        dt = distance * LIFT_TIME
+        if self.verbosity >= 1: print('FD:', dt)
+        def fd_thread():
+            self._motor_cmd(m1=-FD_SPEED)
+            time.sleep(dt)
+            self._motor_cmd(m1=0.)
+        thd = threading.Thread(target=fd_thread)
         thd.start()
         if block: thd.join()
         else: return thd

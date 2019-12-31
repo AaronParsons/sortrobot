@@ -3,8 +3,8 @@ import sys
 sr = Robot()
 
 cmds = {
-    'UP': sr.up,
-    'DN': sr.dn,
+    'FD': sr.fd,
+    'BK': sr.bk,
     'LF': sr.lf,
     'RT': sr.rt,
 }
