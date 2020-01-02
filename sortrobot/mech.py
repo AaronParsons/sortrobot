@@ -27,9 +27,8 @@ SLIDE_TIME = 0.1125
 #SLIDE_POLY = numpy.array([1.07980235e-04,-1.45621868e-03,1.98557185e-03,5.55231344e-01,2.23568309e-01])
 
 # DEFAULT POSITIONS
-HEIGHT = 4
-POS1 = 6
-POS2 = 12
+POS1 = 15
+POS2 = 15
 
 def direction(v):
     return int(v < 0)
@@ -153,28 +152,28 @@ class Robot:
         thd.start()
         if block: thd.join()
         else: return thd
-    def home(self, pos=POS2, hgt=HEIGHT):
+    def home(self, pos=POS2):
         '''Move slide tray all the way to the left.'''
         self.lf(pos + 0.25)
-    def feed_card(self, FD=4.5, BK=2):
+    def feed_card(self, FD=4.5, BK=3):
         '''Push a card off the stack and pull the next one back in.
         Arguments:
             FD: how much to feed forward
             BK: how much to pull back'''
         self.fd(FD)
         self.bk(BK)
-    def take_pic(self):
+    def take_pic(self, size=(1280,720), brightness=100):
         '''Take a picture from the webcam and return the image as a numpy array.
         Arguments:
             shift: the distance to move the arm right out of the way before taking
                 the pic.  Default POS2.
         Returns:
             im: the image as a numpy array.'''
-        self.filename, im = webcam.read().items()[0]
+        self.filename, im = webcam.read(size=size, brightness=brightness).items()[0]
         if self.verbosity >= 1: print('Webcam:', self.filename)
         return im
     def get_card_index(self):
         '''Return a picture of the top (or bottom) slice of the card.'''
         im = self.take_pic()
-        index = im[50:620,960:1040]
+        index = im[50:620,920:1040]
         return index
