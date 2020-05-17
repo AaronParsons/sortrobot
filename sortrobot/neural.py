@@ -2,17 +2,28 @@
 installed in sortrobot/data) for classification.'''
 
 import tensorflow as tf
+import numpy as np
+import os
 
-MODEL_FILE = 'data/mtg_back_front_classifier_v000'
-MODEL_INPUT_SIZE = (64, 48)
+# see https://medium.com/@JeansPantRushi/fix-for-tensorflow-v2-failed-to-get-convolution-algorithm-b367a088b56e
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+directory, _ = os.path.split(__file__)
+MODEL_FILE = directory + '/data/mtg_back_front_classifier_v001'
+MODEL_INPUT_SIZE = (48, 64)
 
 class Classifier:
-    def __init__(self, mdl_file=MODEL_FILE):
-        self.model = tf.keras.models.load_model(mdl_file)
+    def __init__(self, mdl_file=MODEL_FILE, input_size=MODEL_INPUT_SIZE):
+        mdl = tf.keras.models.load_model(mdl_file)
+        self.model = mdl
+        self.input_size = input_size
     def classify(self, im):
-        im = tf.image.resize(im, MODEL_INPUT_SIZE)
+        im = np.array(im).astype(np.float32) / 255
+        im = tf.image.resize(im, self.input_size)
             #method=ResizeMethod.BILINEAR, preserve_aspect_ratio=False,
             #antialias=False, name=None)
-        prediction = self.model(im, training=False)
-        return prediction
+        im = np.expand_dims(im, axis=0)
+        prediction = self.model.predict(im)
+        return np.around(prediction[0])
 
