@@ -34,14 +34,13 @@ class Robot(mech.Robot):
         thd.start()
         if block: thd.join()
         else: return thd
-    def sort(self, ncards, minpos=1, pos1=mech.POS2, pos2=mech.POS1, hgt=mech.HEIGHT):
+    def sort(self, ncards, minpos=1, pos1=mech.POS2, pos2=mech.POS1):
         '''Sort cards into two stacks depending on whether they match or not.
         Arguments:
             ncards: the number of cards to sort.
             minpos: the minimum number of positive detections needed to be regarded as a match.
             pos1: the position to the first (non-matching) stack.  Default mech.POS2.
-            pos2: the position to the second (matching) stack.  Default mech.POS1.
-            hgt: the height of the robot arm in the up position.  Default HEIGHT.'''
+            pos2: the position to the second (matching) stack.  Default mech.POS1. '''
         find_thd = self.find(block=False, shift=pos2)
         for i in range(ncards):
             find_thd.join()
@@ -60,6 +59,5 @@ class Robot(mech.Robot):
             else:
                 if self.verbosity >= 1: print('%d/%d' % (i+1,ncards), self.filename, ': front')
                 pos = pos2
-            self.carry_card(pos, hgt=hgt)
             find_thd = self.find(block=False)
             self.home(pos=pos)
