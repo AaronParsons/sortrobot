@@ -1,11 +1,14 @@
 from __future__ import print_function
 import time, numpy
 import threading
-from . import webcam
+#from . import webcam
 try:
-    # installed if we are on rpi, else ImportError
-    from rrb3 import RRB3 # requires AaronParsons fork
+    # works if we are on rpi, else ImportError on GPIO
+    from .rrb3 import RRB3
 except(ImportError):
+    import warnings
+    warnings.warn('Running without RRB3 interface')
+
     class RRB3:
         '''A dummy wrapper to allow testing when not on rpi.'''
         def __init__(self, *args, **kwargs):
@@ -18,17 +21,14 @@ except(ImportError):
             pass
 
 # SPEED CONSTANTS
-FD_SPEED = 1. # 0.965
+FD_SPEED = 0.5
 BK_SPEED = 1.
-LIFT_TIME = 0.33
 SLIDE_LF_SPEED = 1.
 SLIDE_RT_SPEED = 1. # 0.9625
-SLIDE_TIME = 0.1125
-#SLIDE_POLY = numpy.array([1.07980235e-04,-1.45621868e-03,1.98557185e-03,5.55231344e-01,2.23568309e-01])
 
 # DEFAULT POSITIONS
-POS1 = 15
-POS2 = 15
+POS1 = 1
+POS2 = 1
 
 def direction(v):
     return int(v < 0)
@@ -49,9 +49,9 @@ class Robot:
         if self._stop_event.is_set(): return
         self._motor_lock.acquire()
         if m1 is not None:
-            self._driver.set_left_motor(abs(m1), direction(m1))
+            self._driver.set_right_motor(abs(m1), direction(m1))
         if m2 is not None:
-            self._driver.set_right_motor(abs(m2), direction(m2))
+            self._driver.set_left_motor(abs(m2), direction(m2))
         if self.verbosity >= 2: print('MOTOR CMD:', m1, m2)
         self._motor_lock.release()
     def _oc_cmd(self, oc1=None, oc2=None):
@@ -80,7 +80,7 @@ class Robot:
                 pass
         # After clearing all threads, re-enable access
         self._stop_event.clear()
-    def bk(self, distance, block=True):
+    def bk(self, dt, block=True):
         '''Pull a card back the specified distance.
         Arguments:
             distance: nominally inches of displacment, but not accurate.
@@ -88,7 +88,6 @@ class Robot:
                 otherwise return a handle to the thread in charge of stopping motion.
         Returns:
             None, unless block is False, then Thread handle.'''
-        dt = distance * LIFT_TIME
         if self.verbosity >= 1: print('BK:', dt)
         def bk_thread():
             self._motor_cmd(m1=BK_SPEED)
@@ -98,7 +97,7 @@ class Robot:
         thd.start()
         if block: thd.join()
         else: return thd
-    def fd(self, distance, block=True):
+    def fd(self, dt, block=True):
         '''Push a card forward the specified distance.
         Arguments:
             distance: nominally inches of displacment, but not accurate.
@@ -106,7 +105,6 @@ class Robot:
                 otherwise return a handle to the thread in charge of stopping motion.
         Returns:
             None, unless block is False, then Thread handle.'''
-        dt = distance * LIFT_TIME
         if self.verbosity >= 1: print('FD:', dt)
         def fd_thread():
             self._motor_cmd(m1=-FD_SPEED)
@@ -116,7 +114,7 @@ class Robot:
         thd.start()
         if block: thd.join()
         else: return thd
-    def lf(self, distance, block=True):
+    def lf(self, dt, block=True):
         '''Move the slide tray left the specified distance.
         Arguments:
             distance: nominally inches of displacment, but not accurate.
@@ -124,7 +122,6 @@ class Robot:
                 otherwise return a handle to the thread in charge of stopping motion.
         Returns:
             None, unless block is False, then Thread handle.'''
-        dt = distance * SLIDE_TIME
         if self.verbosity >= 1: print('LF:', dt)
         def lf_thread():
             self._motor_cmd(m2=-SLIDE_LF_SPEED)
@@ -134,7 +131,7 @@ class Robot:
         thd.start()
         if block: thd.join()
         else: return thd
-    def rt(self, distance, block=True):
+    def rt(self, dt, block=True):
         '''Move the slide tray right the specified distance.
         Arguments:
             distance: nominally inches of displacment, but not accurate.
@@ -142,7 +139,6 @@ class Robot:
                 otherwise return a handle to the thread in charge of stopping motion.
         Returns:
             None, unless block is False, then Thread handle.'''
-        dt = distance * SLIDE_TIME
         if self.verbosity >= 1: print('RT:', dt)
         def rt_thread():
             self._motor_cmd(m2=SLIDE_RT_SPEED)
@@ -155,25 +151,10 @@ class Robot:
     def home(self, pos=POS2):
         '''Move slide tray all the way to the left.'''
         self.lf(pos + 0.25)
-    def feed_card(self, FD=4.5, BK=3):
+    def feed_card(self, FD=0.3, BK=0.1):
         '''Push a card off the stack and pull the next one back in.
         Arguments:
             FD: how much to feed forward
             BK: how much to pull back'''
         self.fd(FD)
         self.bk(BK)
-    def take_pic(self, size=(1280,720), brightness=100):
-        '''Take a picture from the webcam and return the image as a numpy array.
-        Arguments:
-            shift: the distance to move the arm right out of the way before taking
-                the pic.  Default POS2.
-        Returns:
-            im: the image as a numpy array.'''
-        self.filename, im = webcam.read(size=size, brightness=brightness).items()[0]
-        if self.verbosity >= 1: print('Webcam:', self.filename)
-        return im
-    def get_card_index(self):
-        '''Return a picture of the top (or bottom) slice of the card.'''
-        im = self.take_pic()
-        index = im[50:620,920:1040]
-        return index
