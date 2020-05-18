@@ -14,7 +14,7 @@ assert os.path.exists(directory)
 order = ' '.join(sys.argv[2:])
 
 while True:
-    if len(order) != 4:
+    if len(order.split()) != 4:
         order = input('Enter a valid order [DEFAULT %s]: ' % DEFAULT_ORDER)
         order = order.strip()
         if len(order) == 0:
@@ -24,7 +24,7 @@ while True:
         print('Using order:', order)
         DEFAULT_ORDER = order # save for next time
     POSITIONS = {}
-    for pos,arg in enumerate(order):
+    for pos,arg in enumerate(order.split()):
         for label in arg.split(','):
             POSITIONS[label] = pos
 
@@ -45,7 +45,7 @@ while True:
             try:
                 pos = POSITIONS[label]
             except(KeyError):
-                print('    label %s has no position! Choosing 0.')
+                print('    label %s has no position! Choosing 0.' % label)
                 pos = 0
         if pos == curpos:
             return
@@ -76,7 +76,7 @@ while True:
             os.mkdir(new_directory)
         print('      moving to %s' % (new_directory))
         os.rename(filename, os.path.join(new_directory, filebase))
-        if r == 'empty':
+        if label == 'empty':
             break
         go(label)
         sr.feed_card()
