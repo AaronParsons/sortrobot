@@ -24,7 +24,10 @@ RESULTS = {
     3: 'mana',
 }
 
-curpos = None
+UNIT = 1.1
+
+sr.lf(UNIT)
+curpos = 'back'
 
 for i in range(num):
     filebase = random_filename()
@@ -33,7 +36,7 @@ for i in range(num):
     cam.rgb_to_file(filename)
     im = Image.open(filename)
     prediction = classifier.classify(im)
-    r = RESULTS[np.argmax(prediction[0])]
+    r = RESULTS[np.argmax(prediction)]
     print('      classfied as %s' % (r))
     new_directory = os.path.join(directory, r)
     if not os.path.exists(new_directory):
@@ -44,14 +47,15 @@ for i in range(num):
         break
     if curpos != r:
         if r == 'back':
-            sr.lf(1.1)
+            sr.lf(UNIT)
         elif r == 'front':
-            sr.rt(1.1)
+            sr.rt(UNIT)
         else: # mana
             if curpos == 'back':
-                sr.rt(0.3)
+                sr.rt(UNIT * 0.25)
             else:
-                sr.lf(0.3)
+                sr.lf(UNIT)
+                sr.rt(UNIT * 0.25)
     curpos = r
-    sr.feed_card()
+    sr.feed_card(FD=0.27)
 
