@@ -151,7 +151,7 @@ class Robot:
     def home(self, pos=POS2):
         '''Move slide tray all the way to the left.'''
         self.lf(pos + 0.25)
-    def feed_card(self, FD=0.3, BK=0.1):
+    def feed_card(self, FD=0.25, BK=0.1):
         '''Push a card off the stack and pull the next one back in.
         Arguments:
             FD: how much to feed forward

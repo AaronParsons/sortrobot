@@ -1,11 +1,7 @@
 from sortrobot.mech import Robot
 from sortrobot.webcam import Camera
+from sortrobot.utils import random_filename
 import sys, random, os
-
-def random_filename(lim=2**31):
-    hexstr = hex(random.randint(0, lim))[2:]
-    hexstr = ('0' * 8 + hexstr)[-8:]
-    return hexstr + '.jpg'
 
 num = int(sys.argv[-2])
 directory = sys.argv[-1]

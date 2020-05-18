@@ -1,16 +1,19 @@
 from sortrobot.mech import Robot
 from sortrobot.webcam import Camera
 from sortrobot.neural import Classifier
+from sortrobot.utils import random_filename
 import numpy as np
 from PIL import Image
 import sys, random, os
 
-def random_filename(lim=2**31):
-    hexstr = hex(random.randint(0,lim))[2:]
-    hexstr = ('0' * 8 + hexstr)[-8:]
-    return hexstr + '.jpg'
+directory = sys.argv[1]
+assert os.path.exists(directory)
 
-directory = sys.argv[-1]
+order = sys.argv[2:]
+if len(order) != 3:
+    print('Using default order: [front, back, mana]')
+    order = ['front', 'back', 'mana']
+POSITIONS = dict(zip(order, range(len(order))))
 
 sr = Robot()
 cam = Camera()
@@ -27,7 +30,24 @@ UNIT = 1.1
 MAXITER = 500
 
 sr.lf(UNIT)
-curpos = 'back'
+curpos = 0
+
+def go(label):
+    global curpos
+    pos = POSITIONS[label]
+    if pos == curpos:
+        return
+    if pos == 0: # far left
+        sr.lf(UNIT)
+    elif pos == 2: # far right
+        sr.rt(UNIT)
+    else:
+        if curpos == 0:
+            sr.rt(0.4 * UNIT)
+        else:
+            sr.lf(UNIT)
+            sr.rt(0.4 * UNIT)
+    curpos = pos
 
 for i in range(MAXITER):
     filebase = random_filename()
@@ -36,26 +56,15 @@ for i in range(MAXITER):
     cam.rgb_to_file(filename)
     im = Image.open(filename)
     prediction = classifier.classify(im)
-    r = RESULTS[np.argmax(prediction)]
-    print('      classfied as %s' % (r))
-    new_directory = os.path.join(directory, r)
+    label = RESULTS[np.argmax(prediction)]
+    print('      classfied as %s' % (label))
+    new_directory = os.path.join(directory, label)
     if not os.path.exists(new_directory):
         os.mkdir(new_directory)
     print('      moving to %s' % (new_directory))
     os.rename(filename, os.path.join(new_directory, filebase))
     if r == 'empty':
         break
-    if curpos != r:
-        if r == 'back':
-            sr.lf(UNIT)
-        elif r == 'front':
-            sr.rt(UNIT)
-        else: # mana
-            if curpos == 'back':
-                sr.rt(UNIT * 0.4)
-            else:
-                sr.lf(UNIT)
-                sr.rt(UNIT * 0.4)
-    curpos = r
-    sr.feed_card(FD=0.3)
+    go(label)
+    sr.feed_card()
 
