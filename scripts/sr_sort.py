@@ -13,6 +13,13 @@ assert os.path.exists(directory)
 
 order = ' '.join(sys.argv[2:])
 
+sr = Robot()
+cam = Camera()
+classifier = Classifier()
+
+UNIT = 1.1
+MAXITER = 500
+
 while True:
     if len(order.split()) != 4:
         order = input('Enter a valid order [DEFAULT %s]: ' % DEFAULT_ORDER)
@@ -22,18 +29,12 @@ while True:
         if input('Confirm order "%s" [Y/n]? ' % order).strip().lower() == 'n':
             continue
         print('Using order:', order)
-        DEFAULT_ORDER = order # save for next time
+    DEFAULT_ORDER = order # save for next time
     POSITIONS = {}
     for pos,arg in enumerate(order.split()):
         for label in arg.split(','):
             POSITIONS[label] = pos
 
-    sr = Robot()
-    cam = Camera()
-    classifier = Classifier()
-
-    UNIT = 1.1
-    MAXITER = 500
 
     # Start at home = left = position 0
     sr.lf(UNIT)
