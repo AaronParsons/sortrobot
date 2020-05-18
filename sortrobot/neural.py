@@ -11,8 +11,20 @@ if len(physical_devices) > 0:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 directory, _ = os.path.split(__file__)
-MODEL_FILE = directory + '/data/mtg_back_front_classifier_v003'
+MODEL_FILE = directory + '/data/mtg_back_front_classifier_v004'
 MODEL_INPUT_SIZE = (48*2, 64*2)
+
+RESULTS = {
+    0: 'back',
+    1: 'black',
+    2: 'blue',
+    3: 'empty',
+    4: 'green',
+    5: 'mana',
+    6: 'other',
+    7: 'red',
+    8: 'white',
+}
 
 class Classifier:
     def __init__(self, mdl_file=MODEL_FILE, input_size=MODEL_INPUT_SIZE):
@@ -27,5 +39,5 @@ class Classifier:
             #antialias=False, name=None)
         im = np.expand_dims(im, axis=0)
         prediction = self.model.predict(im)
-        return np.around(prediction[0])
+        return RESULTS[np.argmax(np.around(prediction[0]))]
 

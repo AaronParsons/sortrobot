@@ -7,5 +7,4 @@ c = Classifier()
 for filename in sys.argv[1:]:
     im = Image.open(filename)
     prediction = c.classify(im)
-    print(filename, prediction)
-
+    print(filename, '->', prediction)

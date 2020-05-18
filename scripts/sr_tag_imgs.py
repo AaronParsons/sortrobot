@@ -1,88 +1,59 @@
-#! /usr/bin/env python
-import pylab as plt
-import sys, cv2, numpy as np
-import cPickle, os
+import pygame as pg
+import os, sys
 
 filelist = sys.argv[1:]
-labdict = {os.path.basename(f): [] for f in filelist}
-try:
-    pickle_file = open('labels.pkl','r')
-    labdict.update(cPickle.load(pickle_file))
-except(IOError):
-    pass
 
-labels = set([label for lablist in labdict.values() for x,y,label in lablist])
-labels = {label: cnt for cnt, label in enumerate(labels)}
-filecnt = 0
-im = cv2.imread(filelist[filecnt])
-img_plt = plt.imshow(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
-curfile = os.path.basename(filelist[filecnt])
+size = width, height = 640, 480
+screen = pg.display.set_mode((width, height))
+KEYMAP = {
+    pg.K_b: 'blue',
+    pg.K_g: 'green',
+    pg.K_k: 'black',
+    pg.K_r: 'red',
+    pg.K_w: 'white',
+    pg.K_o: 'other',
+    pg.K_u: '.',
+}
 
-colors = [color + symbol for color in 'mgcbw' for symbol in 'o^vh']
-lab_plots = {}
+def message_display(text):
+    font = pg.font.Font('freesansbold.ttf',115)
+    text_surf = font.render(text, True, (255,0,0))
+    text_rect = text_surf.get_rect()
+    text_rect.center = ((width//2), (height//2))
+    screen.blit(text_surf, text_rect)
 
-def update_plot(plts, label):
-    global lab_plots
-    data = np.array([(x,y) for x,y,L in labdict[curfile] if L == label])
-    if data.size == 0:
-        data = np.empty((0,2))
-    print label, data
-    if plts.has_key(label):
-        lplt = lab_plots[label]
-        lplt.set_xdata(data[:,0])
-        lplt.set_ydata(data[:,1])
-    else:
-        labels[label] = len(labels)
-        color = colors[labels[label] % len(colors)]
-        lab_plots[label] = plt.plot(data[:,0], data[:,1], color)[0]
-    return
+def update(img, label):
+    screen.blit(img, (0,0))
+    message_display(label)
+    pg.display.flip()
 
-for label in labels.keys():
-    update_plot(lab_plots, label)
+cnt = 0
 
-def get_cur_label():
-    print 'Current labels:'
-    print ', '.join(labels)
-    cur_label = raw_input('Enter new label: ')
-    print 'New current label:', cur_label
-    return cur_label
+pg.init()
+pg.font.init()
+pg.key.set_repeat() # turns off key repeat
+img = pg.image.load(filelist[cnt], 'RGB')
+label = '.'
+update(img, label)
 
-cur_label = get_cur_label()
-
-def click(event):
-    global labdict
-    curfile = os.path.basename(filelist[filecnt])
-    if event.button == 1:
-        x,y = int(np.around(event.xdata)), int(np.around(event.ydata))
-        labdict[curfile] = labdict.get(curfile, []) + [(x,y,cur_label)]
-    elif event.button == 3:
-        labdict[curfile] = labdict.get(curfile, [None])[:-1]
-    update_plot(lab_plots, cur_label)
-    plt.draw()
-    print labdict[curfile]
-
-def press(event):
-    global filecnt
-    global cur_label
-    global curfile
-    if event.key == 'n':
-        print 'Writing labels'
-        f = open('labels.pkl', 'w')
-        cPickle.dump(labdict, f)
-        f.close()
-        filecnt += 1
-        im = cv2.imread(filelist[filecnt])
-        img_plt.set_data(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
-        plt.draw()
-        curfile = os.path.basename(filelist[filecnt])
-        for label in labels.keys():
-            update_plot(lab_plots, label)
-        plt.draw()
-    if event.key == 'y':
-        cur_label = get_cur_label()
-        if cur_label not in labels:
-            labels[cur_label] = len(labels)
-
-plt.connect('button_press_event', click)
-plt.connect('key_press_event', press)
-plt.show()
+while True:
+    for ev in pg.event.get():
+        if ev.type == pg.QUIT:
+            sys.exit()
+        elif ev.type == pg.KEYDOWN:
+            if ev.key in KEYMAP:
+                label = KEYMAP[ev.key]
+                update(img, label)
+            elif ev.key == pg.K_RETURN:
+                filename = filelist[cnt]
+                filedir, filebase = os.path.split(filename)
+                newdir = os.path.join(filedir, label)
+                if not os.path.exists(newdir):
+                    os.mkdir(newdir)
+                newname = os.path.join(newdir, filebase)
+                print('Moving {} -> {}'.format(filename, newname))
+                os.rename(filename, newname)
+                cnt += 1
+                img = pg.image.load(filelist[cnt], 'RGB')
+                label = '.'
+                update(img, label)
