@@ -32,7 +32,7 @@ curpos = 'back'
 for i in range(MAXITER):
     filebase = random_filename()
     filename = os.path.join(directory, filebase)
-    print('%d/%d scanning -> %s' % (i, num, filename))
+    print('%d scanning -> %s' % (i, filename))
     cam.rgb_to_file(filename)
     im = Image.open(filename)
     prediction = classifier.classify(im)
