@@ -52,10 +52,10 @@ for i in range(MAXITER):
             sr.rt(UNIT)
         else: # mana
             if curpos == 'back':
-                sr.rt(UNIT * 0.25)
+                sr.rt(UNIT * 0.4)
             else:
                 sr.lf(UNIT)
-                sr.rt(UNIT * 0.25)
+                sr.rt(UNIT * 0.4)
     curpos = r
-    sr.feed_card(FD=0.27)
+    sr.feed_card(FD=0.3)
 
