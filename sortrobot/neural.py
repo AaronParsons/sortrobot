@@ -11,13 +11,15 @@ if len(physical_devices) > 0:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 directory, _ = os.path.split(__file__)
-MODEL_FILE = directory + '/data/mtg_back_front_classifier_v001'
+#MODEL_FILE = directory + '/data/mtg_back_front_classifier_v001'
+MODEL_FILE = directory + '/data/mtg_back_front_classifier_v002'
 MODEL_INPUT_SIZE = (48, 64)
 
 class Classifier:
     def __init__(self, mdl_file=MODEL_FILE, input_size=MODEL_INPUT_SIZE):
         mdl = tf.keras.models.load_model(mdl_file)
-        self.model = mdl
+        #self.model = mdl # for binary classifiers like v001
+        self.model = tf.keras.Sequential([mdl, tf.keras.layers.Softmax()])
         self.input_size = input_size
     def classify(self, im):
         im = np.array(im).astype(np.float32) / 255

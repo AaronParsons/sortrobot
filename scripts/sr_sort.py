@@ -1,6 +1,7 @@
 from sortrobot.sort import Robot
 from sortrobot.webcam import Camera
 from sortrobot.neural import Classifier
+import numpy as np
 from PIL import Image
 import sys, random, os
 
@@ -18,9 +19,11 @@ classifier = Classifier()
 
 RESULTS = {
     0: 'back',
-    1: 'front',
+    1: 'empty',
+    2: 'front',
+    3: 'mana',
 }
-
+    
 for i in range(num):
     filebase = random_filename()
     filename = os.path.join(directory, filebase)
@@ -28,7 +31,7 @@ for i in range(num):
     cam.rgb_to_file(filename)
     im = Image.open(filename)
     prediction = c.classify(im)
-    r = RESULTS[int(prediction[0])]
+    r = RESULTS[np.argmax(prediction[0])]
     print('%d/%d classfied as %s' % (r))
     new_directory = os.path.join(directory, r)
     if not os.path.exists(new_directory):
