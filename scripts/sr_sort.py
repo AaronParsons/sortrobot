@@ -10,7 +10,6 @@ def random_filename(lim=2**31):
     hexstr = ('0' * 8 + hexstr)[-8:]
     return hexstr + '.jpg'
 
-num = int(sys.argv[-2])
 directory = sys.argv[-1]
 
 sr = Robot()
@@ -25,11 +24,12 @@ RESULTS = {
 }
 
 UNIT = 1.1
+MAXITER = 500
 
 sr.lf(UNIT)
 curpos = 'back'
 
-for i in range(num):
+for i in range(MAXITER):
     filebase = random_filename()
     filename = os.path.join(directory, filebase)
     print('%d/%d scanning -> %s' % (i, num, filename))
