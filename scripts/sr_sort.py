@@ -9,7 +9,7 @@ from PIL import Image
 import sys, random, os
 
 #DEFAULT_ORDER = 'black,blue,green mana back red,white,other'
-DEFAULT_ORDER = 'top_front bot_front bot_back top_back'
+DEFAULT_ORDER = 'top_front top_back bot_back bot_front'
 
 directory = sys.argv[1]
 assert os.path.exists(directory)
