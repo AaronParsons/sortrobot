@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 from sortrobot.mech import Robot
 from sortrobot.webcam import Camera
 from sortrobot.neural import Classifier, OrientationClassifier

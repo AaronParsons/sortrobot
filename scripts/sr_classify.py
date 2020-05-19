@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import sys
 from sortrobot.neural import OrientationClassifier
 from PIL import Image
