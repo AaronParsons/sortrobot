@@ -60,7 +60,7 @@ while True:
                 os.rename(filename, newname)
                 cnt += 1
                 if cnt >= len(filelist):
-                    break
+                    sys.exit()
                 img = pg.image.load(filelist[cnt], 'RGB')
                 label = '.'
                 update(img, label)
