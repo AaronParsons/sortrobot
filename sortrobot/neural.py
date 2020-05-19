@@ -32,12 +32,32 @@ class Classifier:
         #self.model = mdl # for binary classifiers like v001
         self.model = tf.keras.Sequential([mdl, tf.keras.layers.Softmax()])
         self.input_size = input_size
-    def classify(self, im):
+    def classify(self, im, results=RESULTS):
         im = np.array(im).astype(np.float32) / 255
         im = tf.image.resize(im, self.input_size)
             #method=ResizeMethod.BILINEAR, preserve_aspect_ratio=False,
             #antialias=False, name=None)
         im = np.expand_dims(im, axis=0)
-        prediction = self.model.predict(im)
-        return RESULTS[np.argmax(np.around(prediction[0]))]
+        prediction = self.model.predict(im)[0]
+        if results is None:
+            return np.around(prediction)
+        else:
+            return results[np.argmax(np.around(prediction))]
 
+class OrientationClassifier(Classifier):
+    def __init__(self):
+        mdl_file = directory + '/data/mtg_orient_v002'
+        input_size = (36, 48)
+        self.results = {
+            0:'bot_back',
+            1:'bot_front',
+            2:'empty',
+            3:'top_back',
+            4:'top_front',
+        }
+        Classifier.__init__(self, mdl_file, input_size)
+    def classify(self, im, interpret=True):
+        if interpret:
+            return Classifier.classify(self, im, results=self.results)
+        else:
+            return Classifier.classify(self, im, results=None)

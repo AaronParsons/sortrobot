@@ -1,12 +1,13 @@
 from sortrobot.mech import Robot
 from sortrobot.webcam import Camera
-from sortrobot.neural import Classifier
+from sortrobot.neural import Classifier, OrientationClassifier
 from sortrobot.utils import random_filename
 import numpy as np
 from PIL import Image
 import sys, random, os
 
-DEFAULT_ORDER = 'black,blue,green mana back red,white,other'
+#DEFAULT_ORDER = 'black,blue,green mana back red,white,other'
+DEFAULT_ORDER = 'top_front bot_front bot_back top_back'
 
 directory = sys.argv[1]
 assert os.path.exists(directory)
@@ -15,7 +16,8 @@ order = ' '.join(sys.argv[2:])
 
 sr = Robot()
 cam = Camera()
-classifier = Classifier()
+#classifier = Classifier()
+classifier = OrientationClassifier()
 
 UNIT = 1.1
 MAXITER = 500
