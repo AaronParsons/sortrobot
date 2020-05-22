@@ -55,11 +55,15 @@ for filename in args:
         plt.show()
 
     if opts.web:
-        info = lookup(text)
-        print(filename,
-            info['name'],
-            info['colors'],
-            info['rarity'],
-            info['prices']['usd'])
+        try:
+            info = lookup(text, verbose=opts.verbose)
+            print(filename,
+                info['name'],
+                info['colors'],
+                info['rarity'],
+                info['prices']['usd'])
+        except(ValueError):
+            print(filename, text, '(lookup failed)')
+            
     else:
         print(filename, text)
