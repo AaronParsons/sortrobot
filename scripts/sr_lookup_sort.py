@@ -28,13 +28,15 @@ opts, args = parser.parse_args(sys.argv[1:])
 directory = opts.outdir
 assert os.path.exists(directory)
 
+precrop = list(int(x) for x in opts.crop.split(','))
+
 def echo(*args):
     if opts.verbose:
         print(*args)
 
 DEFAULT_ORDER = 'common,uncommon rare mythic unknown'
 
-classifier = OrientatonClassifier()
+classifier = OrientationClassifier()
 order = ' '.join(args)
 
 sr = Robot()
@@ -139,11 +141,11 @@ while True:
             label = 'unknown'
         else: # has correct orientation
             # use OCR to get database entry for card
-            info = scan_and_lookup()
+            info = identify(filename)
             if opts.field in info:
                 # We had a successful lookup: save info
-                infofile = filename[:len('.jpg')] + '.json'
-                with open(infofile, 'wb') as f:
+                infofile = filename[:-len('.jpg')] + '.json'
+                with open(infofile, 'w') as f:
                     echo('    SCRIPT: storing info in {}'.format(infofile))
                     json.dump(info, f)
                 label = info[opts.field]
