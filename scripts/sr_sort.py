@@ -7,19 +7,30 @@ from sortrobot.utils import random_filename
 import numpy as np
 from PIL import Image
 import sys, random, os
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option("-o", "--outdir", dest="outdir", default='/home/pi/scans',
+                  help="Directory to write sorted scans.")
+parser.add_option("-c", "--classifier", dest="classifier", default='orient',
+                   help="Classifier from sortrobot.neural to use.")
+opts, args = parser.parse_args(sys.argv[1:])
+
+directory = opts.outdir
+assert os.path.exists(directory)
+classifier = {
+    'orient': OrientationClassifier,
+    'color': Classifier,
+}[opts.classifier]()
+
 
 #DEFAULT_ORDER = 'black,blue,green mana back red,white,other'
 DEFAULT_ORDER = 'top_front top_back bot_back bot_front'
 
-directory = sys.argv[1]
-assert os.path.exists(directory)
-
-order = ' '.join(sys.argv[2:])
+order = ' '.join(args)
 
 sr = Robot()
 cam = Camera()
-#classifier = Classifier()
-classifier = OrientationClassifier()
 
 UNIT = 1.1
 MAXITER = 500
