@@ -8,12 +8,12 @@ from skimage.io import imread
 from skimage.util import invert, img_as_ubyte
 from skimage.morphology import disk, remove_small_objects
 
-def _possibly_title(region):
+def _maybe_title(region, xoff=0, yoff=0):
     '''Determine if region could possibly be a title bar. Goal is to
     allow some false positives but no false negatives.'''
     # XXX currently hardcoded for (480,640) card images
     try:
-        assert 75 < region.centroid[0] < 400 # roughly in top of img
+        assert 75-xoff < region.centroid[0] < 400-xoff # roughly top of img
         assert region.filled_area > 3750 # has substantial area
         assert 30 < region.minor_axis_length < 70 # thin
         assert np.pi > abs(region.orientation) > 1.52 # horizontal
@@ -41,7 +41,6 @@ def _merge_regions(regions, labels):
         labels[labels == r_j.label] = r_i.label
     # Deduce regions from new labels
     regions = regionprops(labels)
-    regions = [r for r in regions if _possibly_title(r)]
     # Commenting out sanity check which fails if merging regions
     # results in an incompatible region
     #assert len(new_regions) == len(regions) - len(to_merge)
@@ -76,19 +75,19 @@ def _select_best_region(regions, fill_thresh=0.9, verbose=False):
                 [r.centroid for r in regions])
     return regions[-1:]
 
-def _crop_titlebar(image, region, max_shift=30, verbose=False):
+def _crop_titlebar(image, bbox, orientation, centroid, max_shift=30, verbose=False):
     '''Extract title bar image from identified in region, 
     rotating to flat.'''
     if type(image) is str:
         img = imread(image, as_gray=True)
     else:
         img = image.copy()
-    ang = 180/np.pi * region.orientation
+    ang = 180/np.pi * orientation
     if ang < 0:
         ang += 180
     # Rotate title bar to flat
-    img = rotate(img, 90 - ang, center=region.centroid[::-1])
-    x1, y1, x2, y2 = region.bbox
+    img = rotate(img, 90 - ang, center=centroid[::-1])
+    x1, y1, x2, y2 = bbox
     # override box width if unreasonable
     # XXX hardcoded pixel values
     default_y1 = 110
@@ -103,18 +102,26 @@ def _crop_titlebar(image, region, max_shift=30, verbose=False):
             print('    CROP: overriding y2={} with {}'.format(y2,
                                                               default_y2))
         y2 = default_y2
+    if verbose:
+        print('    CROP: ({}:{}, {}:{})'.format(x1, x2, y1, y2))
     title_bar = img[x1:x2,y1:y2]
     return title_bar
 
 
 def extract_titlebar(image, min_brightness=0.3, ker_size=2, seed_thresh=20,
-        min_seed_size=400, verbose=False):
+        min_seed_size=400, precrop=None, verbose=False):
     '''Extract the title bar from the image of a scanned (front, top face)
     card.'''
     if type(image) is str:
         img = imread(image, as_gray=True)
     else:
         img = image.copy()
+    # Precrop
+    if precrop is not None:
+        xmin,ymin,xmax,ymax = precrop
+        img = img[xmin:xmax,ymin:ymax]
+    else:
+        xmin, ymin = 0, 0
     # Basic equalization
     img -= img.min()
     img /= img.max()
@@ -131,8 +138,10 @@ def extract_titlebar(image, min_brightness=0.3, ker_size=2, seed_thresh=20,
     labels = watershed(grad, seeds) # grow labels from seeds
     # Winnow watershed regions into title candidates
     labels = clear_border(labels) # toss out labels that hit image edge
-    regions = [r for r in regionprops(labels) if _possibly_title(r)]
+    regions = [r for r in regionprops(labels) \
+               if _maybe_title(r, xoff=xmin, yoff=ymin)]
     regions, labels = _merge_regions(regions, labels)
+    regions = [r for r in regions if _maybe_title(r, xoff=xmin, yoff=ymin)]
     regions = _select_best_region(regions, verbose=verbose)
 
     assert len(regions) > 0 # We failed to find the title bar
@@ -154,5 +163,10 @@ def extract_titlebar(image, min_brightness=0.3, ker_size=2, seed_thresh=20,
         labels[x1:x2][labels[x1:x2] == lbl] = region.label
     # Reconstitute our expanded region
     region = [r for r in regionprops(labels) if r.label == region.label][0]
-    title_bar = _crop_titlebar(image, region, verbose=verbose)
+    x1,y1,x2,y2 = region.bbox
+    bbox = (x1+xmin, y1+ymin, x2+xmin, y2+ymin)
+    x1,y1 = region.centroid
+    centroid = (x1+xmin, y1+ymin)
+    ang = region.orientation
+    title_bar = _crop_titlebar(image, bbox, ang, centroid, verbose=verbose)
     return title_bar

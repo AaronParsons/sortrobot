@@ -13,28 +13,41 @@ parser.add_option("-w", "--web", dest="web",
 parser.add_option("-p", "--plot", dest="plot",
                   action='store_true', default=False,
                    help="Plot extracted title bar.")
+parser.add_option("-c", "--crop", dest="crop", default="80,80,160,570",
+      help="Comma-delimited list of xmin,ymin,xmax,ymax cropping.")
 parser.add_option("-v", "--verbose", dest="verbose",
                   action='store_true', default=False,
                    help="Print verbose debug info.")
 opts, args = parser.parse_args(sys.argv[1:])
+
+precrop = list(int(x) for x in opts.crop.split(','))
+
+def echo(*args):
+    if opts.verbose:
+        print(*args)
 
 if opts.plot:
     import matplotlib.pyplot as plt
 
 for filename in args:
     try:
-        title_bar = extract_titlebar(filename, verbose=opts.verbose)
+        echo('    SCRIPT: using cropping:', precrop)
+        title_bar = extract_titlebar(filename, precrop=precrop,
+                                     verbose=opts.verbose)
     except(AssertionError):
-        print(filename, 'Failed to find title bar.')
-        continue
+        echo('    SCRIPT: retrying titlebar extraction w/o cropping.')
+        try:
+            title_bar = extract_titlebar(filename, verbose=opts.verbose)
+        except(AssertionError):
+            print(filename, 'Failed to find title bar.')
+            continue
     try:
         text = titlebar_to_text(title_bar, verbose=opts.verbose)
     except(AssertionError):
         from skimage.transform import rotate
         text = ''
         for ang in [-0.5, 0.5, -1,1,-2,2]:
-            if opts.verbose:
-                print('    SCRIPT: brute force rotate {} deg'.format(ang))
+            echo('    SCRIPT: brute force rotate {} deg'.format(ang))
             rot_title_bar = rotate(title_bar, ang)
             try:
                 text = titlebar_to_text(rot_title_bar,verbose=opts.verbose)
@@ -42,8 +55,8 @@ for filename in args:
                 break
             except(AssertionError):
                 pass
-        if opts.verbose and len(text) == 0:
-            print('    SCRIPT: brute force rotate failed.')
+        if len(text) == 0:
+            echo('    SCRIPT: brute force rotate failed.')
 
     if opts.plot:
         plt.imshow(title_bar, cmap=plt.cm.gray)
