@@ -32,7 +32,7 @@ def echo(*args):
     if opts.verbose:
         print(*args)
 
-DEFAULT_ORDER = 'not basic special unkown'
+DEFAULT_ORDER = 'not basic special unknown'
 
 classifier = OrientationClassifier()
 order = ' '.join(args)
@@ -50,6 +50,7 @@ while True:
         if len(order) == 0:
             order = DEFAULT_ORDER
         if input('Confirm order "%s" [Y/n]? ' % order).strip().lower() == 'n':
+            order = ''
             continue
         print('Using order:', order)
     DEFAULT_ORDER = order # save for next time
@@ -140,7 +141,7 @@ while True:
         else: # has correct orientation
             # use OCR to get database entry for card
             info = identify(filename)
-            if opts.field in info:
+            if 'type_line' in info:
                 # We had a successful lookup: save info
                 infofile = filename[:-len('.jpg')] + '.json'
                 with open(infofile, 'w') as f:
