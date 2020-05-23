@@ -52,6 +52,7 @@ while True:
         if len(order) == 0:
             order = DEFAULT_ORDER
         if input('Confirm order "%s" [Y/n]? ' % order).strip().lower() == 'n':
+            order = ''
             continue
         print('Using order:', order)
     DEFAULT_ORDER = order # save for next time
