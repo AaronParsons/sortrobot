@@ -32,7 +32,7 @@ def echo(*args):
     if opts.verbose:
         print(*args)
 
-DEFAULT_ORDER = 'not basic special unknown'
+DEFAULT_ORDER = 'M,R,G U B unknown,multi'
 
 classifier = OrientationClassifier()
 order = ' '.join(args)
@@ -147,15 +147,14 @@ while True:
                 with open(infofile, 'w') as f:
                     echo('    SCRIPT: storing info in {}'.format(infofile))
                     json.dump(info, f)
-                label = info['type_line']
-                if label.startswith('Basic Land'):
-                    label = 'basic'
-                elif label.find('Land') != -1:
-                    label = 'special'
-                else:
-                    label = 'not'
-            else:
-                label = 'unknown'
+                try:
+                    label = info['color_identity']
+                    if len(label) != 1:
+                        label = 'multi'
+                    else:
+                        label = label[0]
+                except(KeyError):
+                    label = 'unknown'
         echo('      SCRIPT: classfied as %s' % (label))
         new_directory = os.path.join(directory, label)
         if not os.path.exists(new_directory):
@@ -163,7 +162,7 @@ while True:
         print('      moving to %s' % (new_directory))
         os.rename(filename, os.path.join(new_directory, filebase))
         go(label)
-        sr.feed_card(FD=0.37)
+        sr.feed_card(FD=0.36)
 
     # After sorting entire stack, give user opportunity to reload
     order = '' # triggers prompt for input at top of loop
