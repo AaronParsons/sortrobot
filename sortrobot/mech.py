@@ -166,16 +166,16 @@ class Robot:
             return
         if pos == 0: # far left
             self.lf(SLIDE_WIDTH / SLIDE_LF_SPEED * \
-                    self._curpos / len(POSITIONS + 0.1)
+                    self._curpos / len(POSITIONS) + 0.1)
         elif pos == 1: # next to left
             self.go(0)
-            sr.rt(SLIDE_WIDTH / SLIDE_RT_SPEED * 0.3)
+            self.rt(SLIDE_WIDTH / SLIDE_RT_SPEED * 0.3)
         elif pos == 2: # next to right
             self.go(3)
-            sr.lf(SLIDE_WIDTH / SLIDE_RT_SPEED * 0.33) # little extra
+            self.lf(SLIDE_WIDTH / SLIDE_RT_SPEED * 0.33) # little extra
         elif pos == 3: # far right
             self.rt(SLIDE_WIDTH / SLIDE_RT_SPEED * \
-                    (3 - self._curpos) / len(POSITIONS + 0.1)
+                    (3 - self._curpos) / len(POSITIONS) + 0.1)
         self._curpos = pos
     def feed_card(self, FD=CARD_WIDTH/FD_SPEED,
             BK=CARD_WIDTH/BK_SPEED/1.8):
