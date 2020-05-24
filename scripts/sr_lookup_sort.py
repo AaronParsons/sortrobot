@@ -2,21 +2,19 @@
 
 from sortrobot.mech import Robot
 from sortrobot.webcam import Camera
-from sortrobot.cardface import extract_titlebar
-from sortrobot.ocr import titlebar_to_text
-from sortrobot.web import lookup
 from sortrobot.utils import random_filename
 from sortrobot.neural import OrientationClassifier
-import numpy as np
+from sortrobot.labels import identify, label_color, label_type, \
+                              label_rarity
 from PIL import Image
-import sys, random, os
+import sys, os
 import json
 from optparse import OptionParser
 
 parser = OptionParser()
 parser.add_option("-o", "--outdir", dest="outdir", default='/home/pi/scans',
                   help="Directory to write sorted scans.")
-parser.add_option("-f", "--field", dest="field", default='rarity',
+parser.add_option("-f", "--field", dest="field", default='type',
                    help="Database field to sort by.")
 parser.add_option("-c", "--crop", dest="crop", default="80,80,160,570",
       help="Comma-delimited list of xmin,ymin,xmax,ymax cropping.")
@@ -29,12 +27,21 @@ directory = opts.outdir
 assert os.path.exists(directory)
 
 precrop = list(int(x) for x in opts.crop.split(','))
+get_label = {
+    'color': label_color,
+    'type': label_type,
+    'rarity': label_rarity,
+}[opts.field]
 
 def echo(*args):
     if opts.verbose:
         print(*args)
 
-DEFAULT_ORDER = 'common,uncommon rare mythic unknown'
+DEFAULT_ORDER = {
+    'color': 'G U B unknown,none,multi,M,R'
+    'type': 'creature spell land other,unknown'
+    'rarity':'common uncommon rare,mythic unknown',
+}[opts.field]
 
 classifier = OrientationClassifier()
 order = ' '.join(args)
@@ -42,7 +49,6 @@ order = ' '.join(args)
 sr = Robot()
 cam = Camera()
 
-UNIT = 1.1
 MAXITER = 500
 
 while True:
@@ -61,70 +67,14 @@ while True:
         for label in arg.split(','):
             POSITIONS[label] = pos
 
-    # Start at home = left = position 0
-    sr.lf(UNIT)
-    curpos = 0
-
     def go(pos):
-        global curpos
         if type(pos) is str:
             try:
                 pos = POSITIONS[label]
             except(KeyError):
                 print('    label %s has no position! Choosing 0.' % label)
                 pos = 0
-        if pos == curpos:
-            return
-        if pos == 0: # far left
-            sr.lf(UNIT)
-        elif pos == 1: # next to left
-            go(0)
-            sr.rt(0.3 * UNIT)
-        elif pos == 2: # next to right
-            go(3)
-            sr.lf(0.3 * UNIT)
-        elif pos == 3: # far right
-            sr.rt(UNIT)
-        else:
-            raise ValueError('Invalid position %s' % pos)
-        curpos = pos
-
-    def identify(filename):
-        try:
-            echo('    SCRIPT: using cropping:', precrop)
-            title_bar = extract_titlebar(filename, precrop=precrop,
-                                         verbose=opts.verbose)
-        except(AssertionError):
-            echo('    SCRIPT: retrying titlebar extraction w/o cropping.')
-            try:
-                title_bar = extract_titlebar(filename, verbose=opts.verbose)
-            except(AssertionError):
-                echo('    SCRIPT: Failed to find title bar.')
-                return {}
-        try:
-            text = titlebar_to_text(title_bar, verbose=opts.verbose)
-        except(AssertionError):
-            from skimage.transform import rotate
-            text = ''
-            for ang in [-0.5, 0.5, -1,1,-2,2]:
-                echo('    SCRIPT: brute force rotate {} deg'.format(ang))
-                rot_title_bar = rotate(title_bar, ang)
-                try:
-                    text = titlebar_to_text(rot_title_bar,verbose=opts.verbose)
-                    title_bar = rot_title_bar
-                    break
-                except(AssertionError):
-                    pass
-            if len(text) == 0:
-                echo('    SCRIPT: brute force rotate failed.')
-                return {}
-        try:
-            info = lookup(text, verbose=opts.verbose)
-            echo('    SCRIPT: found entry for {}'.format(info['name']))
-            return info
-        except(ValueError):
-            echo('    {} lookup failed'.format(text))
-            return {}
+        sr.go(pos)
 
     # Loop for sorting entire stack according to positions
     for i in range(MAXITER):
@@ -142,16 +92,15 @@ while True:
             label = 'unknown'
         else: # has correct orientation
             # use OCR to get database entry for card
-            info = identify(filename)
-            if opts.field in info:
+            info = identify(filename, precrop=precrop,
+                            verbose=opts.verbose)
+            if len(info) > 0:
                 # We had a successful lookup: save info
                 infofile = filename[:-len('.jpg')] + '.json'
                 with open(infofile, 'w') as f:
                     echo('    SCRIPT: storing info in {}'.format(infofile))
                     json.dump(info, f)
-                label = info[opts.field]
-            else:
-                label = 'unknown'
+            label = get_label(info)
         echo('      SCRIPT: classfied as %s' % (label))
         new_directory = os.path.join(directory, label)
         if not os.path.exists(new_directory):

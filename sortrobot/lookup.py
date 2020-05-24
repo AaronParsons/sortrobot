@@ -4,7 +4,7 @@ import json
 
 URL = 'https://api.scryfall.com/cards/named'
 
-def lookup(title, exact=True, verbose=False):
+def search(title, exact=True, verbose=False):
     '''Look up the title on scryfall.'''
     # Build request
     if exact:
@@ -24,6 +24,6 @@ def lookup(title, exact=True, verbose=False):
         if exact:
             if verbose:
                 print('    LOOKUP: Trying fuzzy match.')
-            return lookup(title, exact=False, verbose=verbose)
+            return search(title, exact=False, verbose=verbose)
         else:
             raise ValueError("Couldn't find card '{}'".format(title))

@@ -30,33 +30,7 @@ if opts.plot:
     import matplotlib.pyplot as plt
 
 for filename in args:
-    try:
-        echo('    SCRIPT: using cropping:', precrop)
-        title_bar = extract_titlebar(filename, precrop=precrop,
-                                     verbose=opts.verbose)
-    except(AssertionError):
-        echo('    SCRIPT: retrying titlebar extraction w/o cropping.')
-        try:
-            title_bar = extract_titlebar(filename, verbose=opts.verbose)
-        except(AssertionError):
-            print(filename, 'Failed to find title bar.')
-            continue
-    try:
-        text = titlebar_to_text(title_bar, verbose=opts.verbose)
-    except(AssertionError):
-        from skimage.transform import rotate
-        text = ''
-        for ang in [-0.5, 0.5, -1,1,-2,2]:
-            echo('    SCRIPT: brute force rotate {} deg'.format(ang))
-            rot_title_bar = rotate(title_bar, ang)
-            try:
-                text = titlebar_to_text(rot_title_bar,verbose=opts.verbose)
-                title_bar = rot_title_bar
-                break
-            except(AssertionError):
-                pass
-        if len(text) == 0:
-            echo('    SCRIPT: brute force rotate failed.')
+    text = identify(filename, precrop=precrop, verbose=opts.verbose)
 
     if opts.plot:
         plt.imshow(title_bar, cmap=plt.cm.gray)

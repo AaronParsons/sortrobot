@@ -1,4 +1,11 @@
 import random
+import json
+
+def read_json(filename):
+    '''Read a scryfall json file.'''
+    with open(filename) as f:
+        info = json.load(f)
+    return info
 
 def random_filename(lim=2**31):
     '''Generate a random (hex) filename string.'''

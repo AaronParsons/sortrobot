@@ -32,7 +32,6 @@ order = ' '.join(args)
 sr = Robot()
 cam = Camera()
 
-UNIT = 1.1
 MAXITER = 500
 
 while True:
@@ -51,34 +50,14 @@ while True:
         for label in arg.split(','):
             POSITIONS[label] = pos
 
-
-    # Start at home = left = position 0
-    sr.lf(UNIT)
-    curpos = 0
-
     def go(pos):
-        global curpos
         if type(pos) is str:
             try:
                 pos = POSITIONS[label]
             except(KeyError):
                 print('    label %s has no position! Choosing 0.' % label)
                 pos = 0
-        if pos == curpos:
-            return
-        if pos == 0: # far left
-            sr.lf(UNIT)
-        elif pos == 1: # next to left
-            go(0)
-            sr.rt(0.3 * UNIT)
-        elif pos == 2: # next to right
-            go(3)
-            sr.lf(0.3 * UNIT)
-        elif pos == 3: # far right
-            sr.rt(UNIT)
-        else:
-            raise ValueError('Invalid position %s' % pos)
-        curpos = pos
+        sr.go(pos)
 
     for i in range(MAXITER):
         filebase = random_filename()
