@@ -4,7 +4,7 @@ import sys
 from optparse import OptionParser
 from sortrobot.cardface import extract_titlebar
 from sortrobot.ocr import titlebar_to_text
-from sortrobot.web import lookup
+from sortrobot.lookup import search
 
 parser = OptionParser()
 parser.add_option("-w", "--web", dest="web",
@@ -43,7 +43,7 @@ for filename in args:
 
     if opts.web:
         try:
-            info = lookup(text, verbose=opts.verbose)
+            info = search(text, verbose=opts.verbose)
             print(filename,
                 info['name'],
                 info['colors'],
