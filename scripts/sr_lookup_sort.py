@@ -38,8 +38,8 @@ def echo(*args):
         print(*args)
 
 DEFAULT_ORDER = {
-    'color': 'G U B unknown,none,multi,M,R'
-    'type': 'creature spell land other,unknown'
+    'color': 'G U B unknown,none,multi,M,R',
+    'type': 'creature spell land other,unknown',
     'rarity':'common uncommon rare,mythic unknown',
 }[opts.field]
 
@@ -87,6 +87,11 @@ while True:
         with Image.open(filename) as im:
             orientation = classifier.classify(im)
         if orientation == 'empty':
+            new_directory = os.path.join(directory, 'empty')
+            if not os.path.exists(new_directory):
+                os.mkdir(new_directory)
+            print('      moving to %s' % (new_directory))
+            os.rename(filename, os.path.join(new_directory, filebase))
             break
         elif orientation != 'top_front':
             label = 'unknown'
