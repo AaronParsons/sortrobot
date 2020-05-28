@@ -46,7 +46,7 @@ class Classifier:
 
 class OrientationClassifier(Classifier):
     def __init__(self):
-        mdl_file = directory + '/data/mtg_orient_v002'
+        mdl_file = directory + '/data/mtg_orient_v003'
         input_size = (36, 48)
         self.results = {
             0:'bot_back',
