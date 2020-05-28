@@ -20,7 +20,7 @@ except(ImportError):
             pass
 
 # SPEED CONSTANTS
-FD_SPEED = 0.5
+FD_SPEED = 0.75
 BK_SPEED = 1.
 SLIDE_LF_SPEED = 0.5
 SLIDE_RT_SPEED = 0.5
@@ -28,7 +28,7 @@ SLIDE_RT_SPEED = 0.5
 # DEFAULT POSITIONS
 POSITIONS = (0,1,2,3)
 SLIDE_WIDTH = 0.55 # length s.t. width/speed = time
-CARD_WIDTH = 0.18 # length s.t. width/speed = time
+CARD_WIDTH = 0.16 # length s.t. width/speed = time
 
 def direction(v):
     return int(v < 0)
