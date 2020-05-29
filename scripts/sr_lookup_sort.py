@@ -38,7 +38,7 @@ def echo(*args):
         print(*args)
 
 DEFAULT_ORDER = {
-    'color': 'G U B unknown,none,multi,M,R',
+    'color': 'G U B unknown,none,multi,W,R',
     'type': 'creature spell land other,unknown',
     'rarity':'common uncommon rare,mythic unknown',
 }[opts.field]
